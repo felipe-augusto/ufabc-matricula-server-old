@@ -2,9 +2,11 @@
 
 Web service que alimenta ufabc-matricula-extension, extensão para Google Chrome que extende e aumenta as funcionalidades do sistema de matrículas da UFABC.
 
-# Começando
+## Primeiros passos (extraindo dados)
 
-O repositório já possui um arquivo chamado help.json, que foi resultado de um extração de dados feita no site UFABC HELP!, caso você queria fazer sua própria extração de dados, você precisa ter uma conta no UFABC HELP! associada ao seu Facebook. Entretanto, para rodar o extrator você precisa do Python e algumas de suas dependências instalados:
+### Extraindo dados do UFABC HELP!
+
+O repositório já possui um arquivo chamado **help.json**, que foi resultado de um extração de dados feita no site UFABC HELP!, caso você queria fazer sua própria extração de dados, você precisa ter uma conta no UFABC HELP! associada ao seu Facebook. Entretanto, para rodar o extrator você precisa do Python e algumas de suas dependências instalados:
 
 ```sh
 $ pip install mechanize
@@ -17,11 +19,28 @@ Para rodar o extrator, dentro da pasta root navegue até a pasta build e então:
 $ python load_help.py -u user_facebook -p password_facebook
 ```
 
-Um arquivo chamado help.json, será criado com os dados extraídos do UFABC HELP!
+Um arquivo chamado **help.json**, será criado com os dados extraídos do UFABC HELP! dentro da pasta `build/tmp`.
+
+### Extraindo dados do PDF de horários da matrícula da UFABC
+
+O arquivo **horarios.json** representa o resultado do que faremos a seguir: ainda dentro da pasta build, existe a opção de passarmos o PDF das disciplinas, turmas e horários da UFABC para extrairmos os dados pertinentes. Novamente, precisamos de algumas dependências:
+
+```sh
+$ pip install pyPDF
+$ pip install requests
+```
+
+Para extrair os dados, rode:
+
+```sh
+$ python horarios_extrator.py -u url_horarios.pdf
+```
+
+Pronto, um arquivo **horarios.json** deve aparecer dentro da pasta `build/tmp`.
 
 ### TODO 1.0
 
-- [ ] Processar arquivo com a lista de professores, salas e disciplinas
+- [x] Processar arquivo com a lista de professores, salas e disciplinas
 - [x] Extração de dados do UFABC HELP!
 - [ ] Join na lista de professores com os dados do UFABC HELP!
 - [ ] Carregar lista para o banco de dados
