@@ -28,6 +28,7 @@ def main(argv):
 		
 	
 	path = os.path.dirname(os.path.realpath(__file__))
+	os.remove(path + '/tmp/horarios.json')
 
 	print "Fazendo download dos horarios..."
 	try:
@@ -139,7 +140,19 @@ def main(argv):
 				tmp['turno'] = turno
 				tmp['campus'] = campus
 				tmp['disciplina'] = disciplina
-				all_teachers.append(tmp)
+
+				try:
+					f = open(path + '/tmp/horarios.json', 'r')
+					json_tmp = json.load(f)
+				except:
+					json_tmp = []
+				json_tmp.append(tmp)
+
+				with open(path + '/tmp/horarios.json', 'w') as outfile:
+						json.dump(json_tmp, outfile)
+
+				f.close();
+
 			except:
 				pass
 
@@ -159,8 +172,8 @@ def main(argv):
 			tmp["disciplina"] = disciplina_dirty
 		
 	print "Escrevendo JSON em tmp/horarios.json"	
-	with open(path + '/tmp/horarios.json', 'w') as outfile:
-	    json.dump(all_teachers, outfile)
+	# with open(path + '/tmp/horarios.json', 'w') as outfile:
+	#     json.dump(all_teachers, outfile)
 
 	print "Removendo PDF..."
 	os.remove(path + '/tmp/horarios.pdf')

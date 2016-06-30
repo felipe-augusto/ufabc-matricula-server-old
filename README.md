@@ -33,18 +33,46 @@ $ pip install requests
 Para extrair os dados, rode:
 
 ```sh
-$ python horarios_extrator.py -u url_horarios.pdf
+$ python horarios_extractor.py -u url_horarios.pdf
 ```
 
 Pronto, um arquivo **horarios.json** deve aparecer dentro da pasta `build/tmp`.
 
+### Mesclando dados e Criando web service
+
+Agora que temos ambos os arquivos **horarios.json** e **help.json** podemos mesclar os dois para obtermos uma única "tabela" que será enviada para todos os alunos que estiverem com a extensão do Google Chrome ativada. Agora começamos a fazer a transição da parte de processamento de dados para o servidor web especificamente.
+
+Com o Node.js instalado e MongoDB também, vá dentro da pasta root digite:
+
+```sh
+$ npm install
+```
+
+Caminhe até a pasta build e então faça:
+
+```sh
+$ node build.js
+```
+
+Um arquivo **processed.json** será criado como combinação das extrações feitas anteriormente. Para facilitar nossa vida vamos enviar esse arquivo quando o usuário fizer um requisição ao invés de armazená-lo em um banco de dados. Por isso, tenha certeza que esse arquivo existe dentro da pasta `build/tmp`.
+
+Agora é só fazer:
+
+```sh
+$ npm start
+```
+
+Abra o browser e digite o endereço: `http://localhost:3000/disciplinas`.
+A lista de turmas, com seus respectivos professores e notas no UFABC HELP! deverá aparecer.
+ 
 ### TODO 1.0
 
 - [x] Processar arquivo com a lista de professores, salas e disciplinas
 - [x] Extração de dados do UFABC HELP!
-- [ ] Join na lista de professores com os dados do UFABC HELP!
-- [ ] Carregar lista para o banco de dados
-- [ ] Criar endpoints da API
+- [x] Join na lista de professores com os dados do UFABC HELP!
+- [x] Carregar lista para o banco de dados (DAR .JSON)
+- [x] Criar endpoints da API
+- [ ] Melhorar parsing do PDF de horários
 
 ## Precisa organizar
 

@@ -3,16 +3,15 @@ var express = require('express'),
   mongoose = require('mongoose'),
   Article = mongoose.model('Article');
 
+var path = require('path');
+
+var Disciplina = require("../models/disciplina");
+
 module.exports = function (app) {
   app.use('/', router);
 };
 
-router.get('/', function (req, res, next) {
-  Article.find(function (err, articles) {
-    if (err) return next(err);
-    res.render('index', {
-      title: 'Generator-Express MVC',
-      articles: articles
-    });
-  });
+router.get('/disciplinas', function (req, res, next) {
+  res.charset = 'ISO-8859-1';
+  res.sendFile(path.join(__dirname, '../../build/tmp', 'processed.json'));
 });
