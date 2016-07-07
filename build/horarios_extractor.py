@@ -28,7 +28,8 @@ def main(argv):
 		
 	
 	path = os.path.dirname(os.path.realpath(__file__))
-	os.remove(path + '/tmp/horarios.json')
+	if os.path.isfile(path + '/tmp/horarios.json'):
+		os.remove(path + '/tmp/horarios.json')
 
 	print "Fazendo download dos horarios..."
 	try:
@@ -127,20 +128,37 @@ def main(argv):
 			tmp["pratica"] = pratica
 			try:
 				pass
+				# se a disciplina tiver mais de um traco fudeu
+				# tem que consertar isso depois
 				splitt = tmp["disciplina"].split("-")
+
+				flag_found = None
+				# encontra qual porcao do vetor que esta o horario
+				# normalmente isso eh o fim do vetor
+				# antes deles vem as info de turma e disciplina
+				for i, item in enumerate(splitt):
+					if "diurno" in item or "noturno" in item or "Diurno" in item or "Noturno" in item:
+						flag_found = i
+						turno = item.split(" ")[0]
+						campus = item.replace(turno + " ", "").replace("(", "").replace(")", "")
+
+				# isso concerta o problema com mais de um traco
+				# normalmente vai encontrar no 1
+				# len(splitt) == 1 ta bugado
+				if flag_found != 1 and len(splitt) != 1:
+					for i in range(1, flag_found):
+						splitt[0] += "-" + splitt[i]
+
+				# separa a turma e a disciplina
 				turma = splitt[0].split(" ")[-1]
 				disciplina = splitt[0].replace(" " + turma, "")
-				if "diurno" in splitt[1] or "noturno" in splitt[1] or "Diurno" in splitt[1] or "Noturno" in splitt[1]:
-					turno = splitt[1].split(" ")[0]
-					campus = splitt[1].replace(turno + " ", "").replace("(", "").replace(")", "")
-				else:
-					turno = splitt[-1].split(" ")[0]
-					campus = splitt[-1].replace(turno + " ", "").replace("(", "").replace(")", "")
+
 				tmp['turma'] = turma
 				tmp['turno'] = turno
 				tmp['campus'] = campus
 				tmp['disciplina'] = disciplina
 
+				# isso eh completamente ineficiente
 				try:
 					f = open(path + '/tmp/horarios.json', 'r')
 					json_tmp = json.load(f)
