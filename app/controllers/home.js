@@ -15,3 +15,8 @@ router.get('/disciplinas', function (req, res, next) {
   res.charset = 'ISO-8859-1';
   res.sendFile(path.join(__dirname, '../../build/tmp', 'processed.json'));
 });
+
+router.get('/horarios', function (req, res, next) {
+  res.charset = 'ISO-8859-1';
+  res.sendFile(path.join(__dirname, '../../build/tmp', 'horarios.json'));
+});

@@ -43,10 +43,9 @@ def main(argv):
 
 	def getPDFContent(path):
 	    content = ""
-	    num_pages = 60
 	    p = file(path, "rb")
 	    pdf = pyPdf.PdfFileReader(p)
-	    for i in range(0, num_pages):
+	    for i in range(0, pdf.getNumPages()):
 	        content += pdf.getPage(i).extractText() + "\n"
 	    content = " ".join(content.replace(u"\xa0", " ").strip().split())
 	    return content
