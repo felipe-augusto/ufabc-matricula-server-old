@@ -63,8 +63,8 @@ def main(argv):
 
     print "Comecando do professor numero: " + str(previous + 1)
 
-    # 693
-    for i in range(previous + 1, 694):
+    # 724 professores na ultima vista - 26/07 - 12:44
+    for i in range(previous + 1, 724):
         try:
             f = open('tmp/help.json', 'rw')
         except:

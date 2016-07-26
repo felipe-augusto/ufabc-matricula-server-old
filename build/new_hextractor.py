@@ -105,8 +105,22 @@ def main(argv):
 			# isso nao esta bom !!!
 			try:
 				docente = re.split(regex_cursos, professor_dirty)[1]
+				docente_tmp = re.split(regex_cursos, professor_dirty)[1].split(" ")
+				docente_final = ""
+				for parcial in docente_tmp:
+					if parcial in docente:
+						docente = docente.replace(parcial, "")
+						docente_final += parcial + " "
+				docente_final = docente_final.split("\n")[0]
+				# remove digits
+				docente_final = ''.join([i for i in docente_final if not i.isdigit()])
+				# se for muito longo capaz que seja dois professores
+				# vamos tentar pegar apenas o primeiro
+				if len(docente_final.split(" ")) > 5:
+					docente_final = " ".join(docente_final.split(" ")[:4])
 			except:
-				print professor_dirty
+				pass
+				# print professor_dirty
 
 			# separa pelo turno
 			if "diurno" in disciplina_dirty:
@@ -128,7 +142,7 @@ def main(argv):
 			result['turno'] = turno
 			result['campus'] = campus
 			result['disciplina'] = nome
-			result['teoria'] = docente.title()
+			result['teoria'] = docente_final.title()
 			result['pratica'] = ""
 			all_teachers.append(result)
 

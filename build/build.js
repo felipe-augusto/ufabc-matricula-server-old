@@ -22,11 +22,15 @@ for (var i = 0; i < horarios.length; i ++) {
     s = new difflib.getCloseMatches(horarios[i].teoria, find_help);
     if (s[0] != null) {
         horarios[i].teoria_help = help_dict[s[0]];
+    } else {
+        // console.log(horarios[i].disciplina + " " + horarios[i].teoria);
     }
-    s = new difflib.getCloseMatches(horarios[i].pratica, find_help);
-    if (s[0] != null) {
-       horarios[i].pratica_help = help_dict[s[0]];
-    }
+    // pratica nao existe por hora
+    // s = new difflib.getCloseMatches(horarios[i].pratica, find_help);
+    // if (s[0] != null) {
+    //    horarios[i].pratica_help = help_dict[s[0]];
+    // }
+
     console.log("Calculando disciplina: " + i);
 }
 
