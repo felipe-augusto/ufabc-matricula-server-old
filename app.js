@@ -10,19 +10,19 @@ models.forEach(function (model) {
   require(model);
 });
 
-// var app = express();
+var app = express();
 
-// require('./config/express')(app, config);
+require('./config/express')(app, config);
 
-// app.listen(config.port, function () {
-//   console.log('Express server listening on port ' + config.port);
-// });
-
-pem.createCertificate({days:1, selfSigned:true}, function(err, keys){
-  var app = express();
-
-  require('./config/express')(app, config);
-
-  https.createServer({key: keys.serviceKey, cert: keys.certificate}, app).listen(3000);
+app.listen(config.port, function () {
+  console.log('Express server listening on port ' + config.port);
 });
+
+// pem.createCertificate({days:1, selfSigned:true}, function(err, keys){
+//   var app = express();
+
+//   require('./config/express')(app, config);
+
+//   https.createServer({key: keys.serviceKey, cert: keys.certificate}, app).listen(3000);
+// });
 
