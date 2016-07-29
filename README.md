@@ -72,7 +72,12 @@ A lista de turmas, com seus respectivos professores e notas no UFABC HELP! dever
 - [x] Join na lista de professores com os dados do UFABC HELP!
 - [x] Carregar lista para o banco de dados (DAR .JSON)
 - [x] Criar endpoints da API
-- [ ] Melhorar parsing do PDF de horários
+- [ ] Melhorar parsing do PDF de horários (SOFRÍVEL)
+
+ 
+### DÚVIDAS
+
+- Quais os possíveis estados de um aluno : Aluno Regular e Reserva de Vaga (!?)
 
 ## Precisa organizar
 

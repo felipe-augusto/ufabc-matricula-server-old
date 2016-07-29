@@ -3,6 +3,35 @@ var path = require('path'),
     env = process.env.NODE_ENV || 'development';
 var mongoose = require('mongoose');
 
+// var config = {
+//   development: {
+//     root: rootPath,
+//     app: {
+//       name: 'ufabc-matricula-server'
+//     },
+//     port: process.env.PORT || 3000,
+//     db: 'mongodb://localhost/ufabc-matricula-server-development'
+//   },
+
+//   test: {
+//     root: rootPath,
+//     app: {
+//       name: 'ufabc-matricula-server'
+//     },
+//     port: process.env.PORT || 3000,
+//     db: 'mongodb://localhost/ufabc-matricula-server-test'
+//   },
+
+//   production: {
+//     root: rootPath,
+//     app: {
+//       name: 'ufabc-matricula-server'
+//     },
+//     port: process.env.PORT || 3000,
+//     db: 'mongodb://localhost/ufabc-matricula-server-production'
+//   }
+// };
+
 var config = {
   development: {
     root: rootPath,
@@ -10,7 +39,7 @@ var config = {
       name: 'ufabc-matricula-server'
     },
     port: process.env.PORT || 3000,
-    db: 'mongodb://localhost/ufabc-matricula-server-development'
+    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
   },
 
   test: {
@@ -19,7 +48,7 @@ var config = {
       name: 'ufabc-matricula-server'
     },
     port: process.env.PORT || 3000,
-    db: 'mongodb://localhost/ufabc-matricula-server-test'
+    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
   },
 
   production: {
@@ -28,9 +57,11 @@ var config = {
       name: 'ufabc-matricula-server'
     },
     port: process.env.PORT || 3000,
-    db: 'mongodb://localhost/ufabc-matricula-server-production'
+    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
   }
 };
+
+
 
 mongoose.connect(config[env].db);
 

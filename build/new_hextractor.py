@@ -75,7 +75,7 @@ def main(argv):
 	    content = ""
 	    p = file(path, "rb")
 	    pdf = pyPdf.PdfFileReader(p)
-	    for i in range(0, pdf.getNumPages()): #pdf.getNumPages()
+	    for i in range(0, 5): #pdf.getNumPages()
 	        content += pdf.getPage(i).extractText() + "\n"
 	    # content = " ".join(content.replace(u"\xa0", " ").strip().split())
 	    return content
@@ -83,7 +83,8 @@ def main(argv):
 
 	print "Abrindo PDF..."
 	text = getPDFContent("tmp/horarios.pdf").encode("utf-8", "ignore")
-	split = re.split('-\d{2}SA|-\d{2}SB', text)
+	split = re.split( '([\w-]+\d{2}(SA|SB))', text)
+	print split
 	for disciplina in split:
 		result = {}
 		# separa professores e disciplinas
