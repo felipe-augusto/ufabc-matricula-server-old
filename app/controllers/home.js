@@ -199,7 +199,7 @@ router.get('/import_disciplinas', function (req, res, next) {
 
 // essa funcao tem que ser rodada a cada sei la, 30 segundos
 
-setInterval(function () {recalculaDisciplinas();}, 10000);
+setInterval(function () {recalculaDisciplinas();}, 60000);
 
 function recalculaDisciplinas () {
   request('https://matricula.ufabc.edu.br/cache/matriculas.js', function (error, response, body) {
