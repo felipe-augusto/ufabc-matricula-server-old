@@ -198,53 +198,65 @@ router.get('/import_disciplinas', function (req, res, next) {
 })
 
 // essa funcao tem que ser rodada a cada sei la, 30 segundos
-request('https://matricula.ufabc.edu.br/cache/matriculas.js', function (error, response, body) {
-  data = JSON.parse(body.replace('matriculas=', '').replace(';', ''));
-  var matriculas = {};
-  // cria um vetor para ser usado no mongo dos alunos
-  var in_aluno = [];
 
-  // data sao as disciplinas que ele se matriculou
-  for (var aluno_id in data) {
-    in_aluno.push(aluno_id);
-    for (var i = 0; i < data[aluno_id].length; i++) {
-      // data[key][i] é o id_disciplina que o aluno_id (key pegou)
-      try {
-        matriculas[data[aluno_id][i]] = matriculas[data[aluno_id][i]].concat([parseInt(aluno_id)]);
-      } catch (err) {
-        matriculas[data[aluno_id][i]] = [parseInt(aluno_id)];
+setInterval(function () {recalculaDisciplinas();}, 10000);
+
+function recalculaDisciplinas () {
+  request('https://matricula.ufabc.edu.br/cache/matriculas.js', function (error, response, body) {
+    try {
+      data = JSON.parse(body.replace('matriculas=', '').replace(';', ''));
+    } catch (err) {
+      console.log("N calculando...");
+      return;
+    }
+    console.log("Calculando...");
+    var matriculas = {};
+    // cria um vetor para ser usado no mongo dos alunos
+    var in_aluno = [];
+
+    // data sao as disciplinas que ele se matriculou
+    for (var aluno_id in data) {
+      in_aluno.push(aluno_id);
+      for (var i = 0; i < data[aluno_id].length; i++) {
+        // data[key][i] é o id_disciplina que o aluno_id (key pegou)
+        try {
+          matriculas[data[aluno_id][i]] = matriculas[data[aluno_id][i]].concat([parseInt(aluno_id)]);
+        } catch (err) {
+          matriculas[data[aluno_id][i]] = [parseInt(aluno_id)];
+        }
       }
     }
-  }
-  // cria um vetor para ser usado no Mongo das matriculas
-  var in_mat = [];
-  for (key in matriculas) {
-    in_mat.push(key);
-  }
-  // precisa dar um update das disciplinas com a info dos alunos
-  Disciplina.find({disciplina_id: {'$in': in_mat}}).exec(function (err, disciplinas) {
-    Aluno.find({aluno_id : {'$in': in_aluno}}).lean().exec(function (err, users) {
-      // transforma users para uma hash
-      var hash_users = {};
-      for (var i = 0; i < users.length; i++) {
-        hash_users[parseInt(users[i].aluno_id)] = users[i];
-      }
-      // itera sobre todas as disciplinas e atualiza suas matriculas
-      for (var i = 0; i < disciplinas.length; i++) {
-        var mat_disciplinas = (matriculas[disciplinas[i].disciplina_id]);
-        var updated_disc = [];
-        disciplinas[i].alunos_matriculados = [];
-        for (var j = 0; j < mat_disciplinas.length; j++) {
-          if (hash_users[mat_disciplinas[j]] != null) {
-            disciplinas[i].alunos_matriculados.push(hash_users[mat_disciplinas[j]]);
-          };
+    // cria um vetor para ser usado no Mongo das matriculas
+    var in_mat = [];
+    for (key in matriculas) {
+      in_mat.push(key);
+    }
+    // precisa dar um update das disciplinas com a info dos alunos
+    Disciplina.find({disciplina_id: {'$in': in_mat}}).exec(function (err, disciplinas) {
+      Aluno.find({aluno_id : {'$in': in_aluno}}).lean().exec(function (err, users) {
+        // transforma users para uma hash
+        var hash_users = {};
+        for (var i = 0; i < users.length; i++) {
+          hash_users[parseInt(users[i].aluno_id)] = users[i];
         }
-        disciplinas[i].save();
-      }
-    })
-  });
+        // itera sobre todas as disciplinas e atualiza suas matriculas
+        for (var i = 0; i < disciplinas.length; i++) {
+          var mat_disciplinas = (matriculas[disciplinas[i].disciplina_id]);
+          var updated_disc = [];
+          disciplinas[i].alunos_matriculados = [];
+          for (var j = 0; j < mat_disciplinas.length; j++) {
+            if (hash_users[mat_disciplinas[j]] != null) {
+              disciplinas[i].alunos_matriculados.push(hash_users[mat_disciplinas[j]]);
+            };
+          }
+          disciplinas[i].save();
+        }
+      })
+    });
 
-})
+  })
+
+};
 
 // check if an element exists in array using a comparer function
 // comparer : function(currentElement)
@@ -290,6 +302,4 @@ router.get('/update_ideal', function (req, res, next) {
       })
   }
   res.json('OK');
-
-
 });
