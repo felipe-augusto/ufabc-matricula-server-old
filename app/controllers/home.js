@@ -90,7 +90,7 @@ var discover_obg = {
 }
 
 // simula uma disciplina
-router.post('/simula', function (req, res, next) {
+router.post('/simula_old', function (req, res, next) {
   var disciplina_id = parseInt(req.body.disciplina_id);
   var aluno_id = parseInt(req.body.aluno_id);
   // recebe um aluno_id e disciplina_id
@@ -144,6 +144,63 @@ router.post('/simula', function (req, res, next) {
     }
     var sem_duplicados = _.uniqBy(resp, 'aluno_id');
     var pos = _.findIndex(resp, { 'aluno_id': aluno_id });
+    res.json({pos: pos + 1 , total: sem_duplicados.length});
+    }
+  )
+})
+
+router.post('/simula', function (req, res, next) {
+  var disciplina_id = parseInt(req.body.disciplina_id);
+  var aluno_id = parseInt(req.body.aluno_id);
+  // recebe um aluno_id e disciplina_id
+  Disciplina.aggregate([{
+    $match: {disciplina_id : disciplina_id}
+  }, {
+    $unwind : "$alunos_matriculados"
+  },{
+    $unwind : "$alunos_matriculados.cursos"
+  }, {
+    $project: {
+      turno: 1,
+      ideal_quad: 1,
+      aluno_id: "$alunos_matriculados.aluno_id",
+      aluno : "$alunos_matriculados.cursos"
+    }
+  }], function (err, resp) {
+    // se nao conseguir pegar o turno
+    // eh pq nao tem conhecimento de nenhum cidado na turma
+    try {
+        var turno_disciplina = resp[0].turno;
+        var ideal = resp[0].ideal_quad;
+    } catch (err) {
+      res.json({pos: 1, total: 1});
+      return;
+    }
+    // escolhe como vai filtrar por turno
+    var sort_turno = 0;
+    if (turno_disciplina == "diurno") {
+      sort_turno = 'asc';
+    } else if (turno_disciplina == "noturno") {
+      sort_turno = 'desc';
+    }
+
+    // aqui "faz o corte"
+    // 1 -> prioridade Diurno
+    // -1 -> prioridade Noturno
+    //
+    // alem disso precisa escolher se vai fazer por cr ou por cp
+    // se for quad ideal faz por cr
+    // senao faz por CP
+    var sort_type = ""
+    if (ideal) {
+      sort_type = 'aluno.cr';
+    } else {
+      sort_type = 'aluno.cp';
+    }
+
+    var test = _.orderBy(resp, ['aluno.turno', sort_type], [sort_turno, 'desc']);
+    var sem_duplicados = _.uniqBy(test, 'aluno_id');  
+    var pos = _.findIndex(sem_duplicados, { 'aluno_id': aluno_id });
     res.json({pos: pos + 1 , total: sem_duplicados.length});
     }
   )
