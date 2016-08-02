@@ -60,7 +60,8 @@ router.get('/horarios', function (req, res, next) {
 });
 
 
-//deve fazer update, nao apenas criar
+// isso serve para cadastrar um aluno no banco de dados
+// a extensao do chrome faz essa requisicao
 router.post('/test', function (req, res, next) {
   var cursos = req.body.data;
   var aluno_id = req.body.aluno_id;
@@ -89,67 +90,10 @@ var discover_obg = {
   'bct' : [22,24,14,16,3,17,4,27,25,20,13,28]
 }
 
-// simula uma disciplina
+// simula uma disciplina -> nao estou usando esse
+// se tu passar só o disciplina_id ele retorna
+// nap precisa do aluno_id
 router.post('/simula_old', function (req, res, next) {
-  var disciplina_id = parseInt(req.body.disciplina_id);
-  var aluno_id = parseInt(req.body.aluno_id);
-  // recebe um aluno_id e disciplina_id
-  Disciplina.aggregate([{
-    $match: {disciplina_id : disciplina_id}
-  }, {
-    $unwind : "$alunos_matriculados"
-  },{
-    $unwind : "$alunos_matriculados.cursos"
-  }, {
-    $project: {
-      turno: 1,
-      ideal_quad: 1,
-      aluno_id: "$alunos_matriculados.aluno_id",
-      aluno : "$alunos_matriculados.cursos"
-    }
-  }], function (err, resp) {
-    // se nao conseguir pegar o turno
-    // eh pq nao tem conhecimento de nenhum cidado na turma
-    try {
-        var turno_disciplina = resp[0].turno;
-        var ideal = resp[0].ideal_quad;
-    } catch (err) {
-      res.json({pos: 1, total: 1});
-      return;
-    }
-    // escolhe como vai filtrar por turno
-    var sort_turno = 0;
-    if (turno_disciplina == "diurno") {
-      sort_turno = 1;
-    } else if (turno_disciplina == "noturno") {
-      sort_turno = -1;
-    }
-    // aqui "faz o corte"
-    // 1 -> prioridade Diurno
-    // -1 -> prioridade Noturno
-    //
-    // alem disso precisa escolher se vai fazer por cr ou por cp
-    // se for quad ideal faz por cr
-    // senao faz por CP
-    if (ideal) {
-      resp.sort(
-        firstBy('aluno.turno', sort_turno)
-        .thenBy(function (v1,v2) {return v1.aluno.cr < v2.aluno.cr;})
-      );
-    } else {
-      resp.sort(
-        firstBy('aluno.turno', sort_turno)
-        .thenBy(function (v1,v2) {return v1.aluno.cp < v2.aluno.cp;})
-      );
-    }
-    var sem_duplicados = _.uniqBy(resp, 'aluno_id');
-    var pos = _.findIndex(resp, { 'aluno_id': aluno_id });
-    res.json({pos: pos + 1 , total: sem_duplicados.length});
-    }
-  )
-})
-
-router.post('/simula', function (req, res, next) {
   var disciplina_id = parseInt(req.body.disciplina_id);
   var aluno_id = parseInt(req.body.aluno_id);
   // recebe um aluno_id e disciplina_id
@@ -184,13 +128,6 @@ router.post('/simula', function (req, res, next) {
       sort_turno = 'desc';
     }
 
-    // aqui "faz o corte"
-    // 1 -> prioridade Diurno
-    // -1 -> prioridade Noturno
-    //
-    // alem disso precisa escolher se vai fazer por cr ou por cp
-    // se for quad ideal faz por cr
-    // senao faz por CP
     var sort_type = ""
     if (ideal) {
       sort_type = 'aluno.cr';
@@ -200,17 +137,71 @@ router.post('/simula', function (req, res, next) {
 
     var test = _.orderBy(resp, ['aluno.turno', sort_type], [sort_turno, 'desc']);
     var sem_duplicados = _.uniqBy(test, 'aluno_id');  
+    res.json(test);
+    }
+  )
+})
+
+// metodo que simula
+// recebe um aluno_id e uma disciplina_id
+// retorna a posição do aluno e o total
+router.post('/simula', function (req, res, next) {
+  var disciplina_id = parseInt(req.body.disciplina_id);
+  var aluno_id = parseInt(req.body.aluno_id);
+  // recebe um aluno_id e disciplina_id
+  Disciplina.aggregate([{
+    $match: {disciplina_id : disciplina_id}
+  }, {
+    $unwind : "$alunos_matriculados"
+  },{
+    $unwind : "$alunos_matriculados.cursos"
+  }, {
+    $project: {
+      turno: 1,
+      ideal_quad: 1,
+      aluno_id: "$alunos_matriculados.aluno_id",
+      aluno : "$alunos_matriculados.cursos"
+    }
+  }], function (err, resp) {
+    // se nao conseguir pegar o turno
+    // eh pq nao tem conhecimento de nenhum cidado na turma
+    try {
+        var turno_disciplina = resp[0].turno;
+        var ideal = resp[0].ideal_quad;
+    } catch (err) {
+      res.json({pos: 1, total: 1});
+      return;
+    }
+    // escolhe como vai filtrar por turno
+    var sort_turno = 0;
+    if (turno_disciplina == "diurno") {
+      sort_turno = 'asc';
+    } else if (turno_disciplina == "noturno") {
+      sort_turno = 'desc';
+    }
+    // se for quadrimestre ideal
+    // filtra por cr, senao por cp
+    var sort_type = ""
+    if (ideal) {
+      sort_type = 'aluno.cr';
+    } else {
+      sort_type = 'aluno.cp';
+    }
+
+    var test = _.orderBy(resp, ['aluno.turno', sort_type], [sort_turno, 'desc']);
+    // as vezes um aluno tem dois cursos na reserva de vaga
+    // apenas um deve permanecer
+    // espero que ele retire o que tem cr/cp maior
+    var sem_duplicados = _.uniqBy(test, 'aluno_id');  
     var pos = _.findIndex(sem_duplicados, { 'aluno_id': aluno_id });
     res.json({pos: pos + 1 , total: sem_duplicados.length});
     }
   )
 })
 
-
-// function (v1,v2) {return v1.aluno.cp < v2.aluno.cp};
-
 // importa todas as disciplinas ofertadas em determinado quadrimestre
 // roda apenas uma vez no quadrimestre
+// essa rota precisa ser protegida
 router.get('/import_disciplinas', function (req, res, next) {
   // isso eh feito apenas uma vez por quad
   // pega a lista de disciplinas com suas disciplias obrigatorias
@@ -258,6 +249,8 @@ router.get('/import_disciplinas', function (req, res, next) {
 
 setInterval(function () {recalculaDisciplinas();}, 60000);
 
+
+// pega a lista de todas as matriculas feitas e dá update
 function recalculaDisciplinas () {
   request('https://matricula.ufabc.edu.br/cache/matriculas.js', function (error, response, body) {
     try {
