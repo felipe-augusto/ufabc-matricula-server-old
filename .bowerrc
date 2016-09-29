@@ -1,4 +1,7 @@
 {
   "directory": "public/components",
-  "json": "bower.json"
+  "json": "bower.json",
+  "resolvers": [
+    "bower-npm-resolver"
+  ]
 }

@@ -5,6 +5,7 @@ var express = require('express'),
 
 var path = require('path');
 var firstBy = require('thenby');
+var fs = require('fs');
 
 var _ = require('lodash');
 
@@ -17,6 +18,8 @@ module.exports = function (app) {
 };
 
 last_date = new Date();
+
+var todasMatriculas = {};
 
 var cursos_ids = {
   'Bacharelado em Ciências da Computação' : 16,
@@ -90,10 +93,43 @@ var discover_obg = {
   'bct' : [22,24,14,16,3,17,4,27,25,20,13,28]
 }
 
+// retorna um obj disciplina
+router.post('/get_disc', function (req, res, next) {
+  var disciplina_id = parseInt(req.body.disciplina_id);
+  Disciplina.find({disciplina_id: disciplina_id}).lean().exec(function(error, resp){
+        res.json(resp);
+  });
+})
+
+// verifica quais sao as disciplinas que possuem um maior numero de alunos cadastrados
+// que usam a extensao
+router.get('/disc_data', function (req, res, next) {
+  Disciplina.aggregate([{
+      $project: {
+        disciplina_id : 1,
+        alunos_matriculados : 1
+      }
+    }, {
+      $unwind: "$alunos_matriculados"
+    }, {
+      $group: { _id:{ disciplina_id: '$disciplina_id'}, students:{$sum:1}}
+    }], function (err, resp) {
+      // this find the disciplina with the maximum number of students
+      var max = 0;
+      var max_obj;
+      for(var i = 0; i < resp.length; i++) {
+        if(resp[i].students > 20) {
+          console.log(resp[i]);
+        }
+      }
+      res.json(resp);
+  })
+})
+
 // simula uma disciplina -> nao estou usando esse
 // se tu passar só o disciplina_id ele retorna
 // nap precisa do aluno_id
-router.post('/simula_old', function (req, res, next) {
+router.post('/cortes', function (req, res, next) {
   var disciplina_id = parseInt(req.body.disciplina_id);
   var aluno_id = parseInt(req.body.aluno_id);
   // recebe um aluno_id e disciplina_id
@@ -108,7 +144,8 @@ router.post('/simula_old', function (req, res, next) {
       turno: 1,
       ideal_quad: 1,
       aluno_id: "$alunos_matriculados.aluno_id",
-      aluno : "$alunos_matriculados.cursos"
+      aluno : "$alunos_matriculados.cursos",
+      obrigatorias: "$obrigatorias"
     }
   }], function (err, resp) {
     // se nao conseguir pegar o turno
@@ -120,6 +157,21 @@ router.post('/simula_old', function (req, res, next) {
       res.json({pos: 1, total: 1});
       return;
     }
+    // verifica se tem reserva de vaga
+    var cleaned = resp.map(function (item) {
+      _.pull(item.obrigatorias, 22, 20); // BCT e BCH
+      var reserva = _.includes(item.obrigatorias, item.aluno.id_curso);
+      if (!reserva) {
+        item.aluno.ind_afinidade = 0;
+      }
+      return {  cr : item.aluno.cr,
+                cp: item.aluno.cp,
+                ik: item.aluno.ind_afinidade,
+                reserva: reserva,
+                turno: item.aluno.turno,
+                curso: item.aluno.nome_curso,
+                id: item.aluno_id}
+    });
     // escolhe como vai filtrar por turno
     var sort_turno = 0;
     if (turno_disciplina == "diurno") {
@@ -130,14 +182,14 @@ router.post('/simula_old', function (req, res, next) {
 
     var sort_type = ""
     if (ideal) {
-      sort_type = 'aluno.cr';
+      sort_type = 'cr';
     } else {
-      sort_type = 'aluno.cp';
+      sort_type = 'cp';
     }
 
-    var test = _.orderBy(resp, ['aluno.turno', sort_type], [sort_turno, 'desc']);
-    var sem_duplicados = _.uniqBy(test, 'aluno_id');  
-    res.json(test);
+    var test = _.orderBy(cleaned, ['reserva', 'ik', 'turno', sort_type], ['desc', 'desc', sort_turno, 'desc']);
+    var sem_duplicados = _.uniqBy(test, 'id');
+    res.json(sem_duplicados);
     }
   )
 })
@@ -247,8 +299,14 @@ router.get('/import_disciplinas', function (req, res, next) {
 
 // essa funcao tem que ser rodada a cada sei la, 30 segundos
 
-setInterval(function () {recalculaDisciplinas();}, 60000);
+// setInterval(function () {recalculaDisciplinas();}, 60000);
 
+// precisa testar para  ver se o post esta funcionando
+router.get('/update_matriculas', function (req, res, next) {
+  var matriculas = parseInt(req.body.matriculas);
+  recalculaDisciplinas();
+  res.send("done");
+});
 
 // pega a lista de todas as matriculas feitas e dá update
 function recalculaDisciplinas () {
@@ -259,6 +317,7 @@ function recalculaDisciplinas () {
       console.log("N calculando...");
       return;
     }
+    data = JSON.parse(fs.readFileSync('matriculas.json', 'utf8').replace('matriculas=', '').replace(';', ''));
     console.log("Calculando...");
     var matriculas = {};
     // cria um vetor para ser usado no mongo dos alunos
@@ -276,11 +335,33 @@ function recalculaDisciplinas () {
         }
       }
     }
-    // cria um vetor para ser usado no Mongo das matriculas
-    var in_mat = [];
-    for (key in matriculas) {
-      in_mat.push(key);
+    
+    if(Object.keys(todasMatriculas).length == 0) {
+      todasMatriculas = matriculas;
     }
+
+    // cria um vetor para ser usado no Mongo para fazer a query de matriculas usando $in
+    var in_mat = [];
+
+    var matriculas_changed = [];
+    var alunos_changed = [];
+    for (key in matriculas) {
+
+      var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+      var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+      // se der vazio, quer dizer que nada mudou
+      if(saiu.length != 0 || entraram.length != 0) {
+        console.log(key, saiu, entraram);
+      }
+      in_mat.push(key);
+      //in_mat.push(key);
+    }
+
+    // depois de atualizar o banco de dados atualiza as matriculas
+    todasMatriculas = matriculas;
+
+    // verifica quais dessas matriculas foram modificadas e da update apenas nelas
+    return;
     // precisa dar um update das disciplinas com a info dos alunos
     Disciplina.find({disciplina_id: {'$in': in_mat}}).exec(function (err, disciplinas) {
       Aluno.find({aluno_id : {'$in': in_aluno}}).lean().exec(function (err, users) {
