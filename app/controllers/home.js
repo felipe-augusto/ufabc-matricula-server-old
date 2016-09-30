@@ -297,16 +297,98 @@ router.get('/import_disciplinas', function (req, res, next) {
   })
 })
 
-// essa funcao tem que ser rodada a cada sei la, 30 segundos
+// update informacoes do aluno
+router.post('/update_aluno', function (req, res, next) {
+  // FIRST NEED TO CHECK IF THERE ARE ACTUAL DIFFERENCES BETWEEN THE NEW AND THE OLD ONE
+  var id = req.body.id;
+  Disciplina.find({'alunos_matriculados.aluno_id' : id}).lean().exec(function (err, resp) {
+    resp.map(function (disciplina) {
+      var pos = _.findIndex(disciplina.alunos_matriculados, { 'aluno_id': parseInt(id) });
+      disciplina.alunos_matriculados[pos].cursos = [];
+      console.log(disciplina.alunos_matriculados[pos]);
+    });
+  });
+  res.send("done");
+});
 
+// essa funcao tem que ser rodada a cada sei la, 30 segundos
 // setInterval(function () {recalculaDisciplinas();}, 60000);
 
 // precisa testar para  ver se o post esta funcionando
 router.get('/update_matriculas', function (req, res, next) {
-  var matriculas = parseInt(req.body.matriculas);
-  recalculaDisciplinas();
+  // var matriculas = parseInt(req.body.matriculas);
+  recalculaSoft();
   res.send("done");
 });
+
+function getMatriculas(matriculas) {
+  data = JSON.parse(fs.readFileSync(matriculas, 'utf8').replace('matriculas=', '').replace(';', ''));
+
+  var matriculas = {};
+    // cria um vetor para ser usado no mongo dos alunos
+  var in_aluno = [];
+
+  // data sao as disciplinas que ele se matriculou
+  for (var aluno_id in data) {
+    in_aluno.push(aluno_id);
+    for (var i = 0; i < data[aluno_id].length; i++) {
+      // data[key][i] é o id_disciplina que o aluno_id (key pegou)
+      try {
+        matriculas[data[aluno_id][i]] = matriculas[data[aluno_id][i]].concat([parseInt(aluno_id)]);
+      } catch (err) {
+        matriculas[data[aluno_id][i]] = [parseInt(aluno_id)];
+      }
+    }
+  }
+
+  return matriculas;
+}
+
+todasMatriculas = getMatriculas('matriculas.json');
+
+function recalculaSoft(){
+    matriculas = getMatriculas('matriculas1.json');
+    
+    if(Object.keys(todasMatriculas).length == 0) {
+      todasMatriculas = matriculas;
+    }
+
+    var aluno_query = [];
+    var add_to_discipline = {};
+
+    // itera sobre as matriculas procurando por mudancas
+    for (key in matriculas) {
+      var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+      var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+      // se der vazio, quer dizer que nada mudou
+      if (saiu.length != 0) {
+        saiu.map(function (item) {
+          // remove aluno da Disciplina
+        });
+      } else if (entraram.length != 0) {
+        add_to_discipline[key] = entraram;
+        entraram.map(function (item) {
+          aluno_query = aluno_query.concat(item);
+        });
+      }
+    }
+
+    Aluno.find({aluno_id : {'$in': aluno_query}}).lean().exec(function (err, users) {
+    for (key in add_to_discipline) {
+        var alunos = add_to_discipline[key].map(function (item) {
+          return users[_.findIndex(users, { 'aluno_id': item })];
+        });
+        console.log(key, _.pull(alunos, undefined), add_to_discipline[key]);
+        // da um update na disciplina dando um $push 
+      };
+    });
+
+    // depois de atualizar o banco de dados atualiza as matriculas
+    // todasMatriculas = matriculas;
+
+    // verifica quais dessas matriculas foram modificadas e da update apenas nelas
+    return;
+}
 
 // pega a lista de todas as matriculas feitas e dá update
 function recalculaDisciplinas () {
@@ -317,7 +399,6 @@ function recalculaDisciplinas () {
       console.log("N calculando...");
       return;
     }
-    data = JSON.parse(fs.readFileSync('matriculas.json', 'utf8').replace('matriculas=', '').replace(';', ''));
     console.log("Calculando...");
     var matriculas = {};
     // cria um vetor para ser usado no mongo dos alunos
@@ -335,33 +416,11 @@ function recalculaDisciplinas () {
         }
       }
     }
-    
-    if(Object.keys(todasMatriculas).length == 0) {
-      todasMatriculas = matriculas;
-    }
-
-    // cria um vetor para ser usado no Mongo para fazer a query de matriculas usando $in
+    // cria um vetor para ser usado no Mongo das matriculas
     var in_mat = [];
-
-    var matriculas_changed = [];
-    var alunos_changed = [];
     for (key in matriculas) {
-
-      var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
-      var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
-      // se der vazio, quer dizer que nada mudou
-      if(saiu.length != 0 || entraram.length != 0) {
-        console.log(key, saiu, entraram);
-      }
       in_mat.push(key);
-      //in_mat.push(key);
     }
-
-    // depois de atualizar o banco de dados atualiza as matriculas
-    todasMatriculas = matriculas;
-
-    // verifica quais dessas matriculas foram modificadas e da update apenas nelas
-    return;
     // precisa dar um update das disciplinas com a info dos alunos
     Disciplina.find({disciplina_id: {'$in': in_mat}}).exec(function (err, disciplinas) {
       Aluno.find({aluno_id : {'$in': in_aluno}}).lean().exec(function (err, users) {
