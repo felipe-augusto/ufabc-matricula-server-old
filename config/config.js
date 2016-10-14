@@ -1,65 +1,75 @@
+
+require('dotenv').config();
 var path = require('path'),
     rootPath = path.normalize(__dirname + '/..'),
     env = process.env.NODE_ENV || 'development';
 var mongoose = require('mongoose');
 
-// var config = {
-//   development: {
-//     root: rootPath,
-//     app: {
-//       name: 'ufabc-matricula-server'
-//     },
-//     port: process.env.PORT || 3000,
-//     db: 'mongodb://localhost/ufabc-matricula-server-development'
-//   },
 
-//   test: {
-//     root: rootPath,
-//     app: {
-//       name: 'ufabc-matricula-server'
-//     },
-//     port: process.env.PORT || 3000,
-//     db: 'mongodb://localhost/ufabc-matricula-server-test'
-//   },
-
-//   production: {
-//     root: rootPath,
-//     app: {
-//       name: 'ufabc-matricula-server'
-//     },
-//     port: process.env.PORT || 3000,
-//     db: 'mongodb://localhost/ufabc-matricula-server-production'
-//   }
-// };
-
-var config = {
-  development: {
-    root: rootPath,
-    app: {
-      name: 'ufabc-matricula-server'
+if(process.env.DB_USER == "true") {
+  var config = {
+    development: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: 'mongodb://localhost/ufabc-matricula-server-development'
     },
-    port: process.env.PORT || 3000,
-    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
-  },
 
-  test: {
-    root: rootPath,
-    app: {
-      name: 'ufabc-matricula-server'
+    test: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: 'mongodb://localhost/ufabc-matricula-server-test'
     },
-    port: process.env.PORT || 3000,
-    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
-  },
 
-  production: {
-    root: rootPath,
-    app: {
-      name: 'ufabc-matricula-server'
+    production: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: 'mongodb://localhost/ufabc-matricula-server-production'
+    }
+  };
+} else {
+  var URI = 'mongodb://' + process.env.DB_USER + ':' + process.env.DB_PASSWORD + '@ds031975.mlab.com:31975/ufabc';
+  var config = {
+    development: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: URI
     },
-    port: process.env.PORT || 3000,
-    db: 'mongodb://ufabc:ufabc123@ds031975.mlab.com:31975/ufabc'
-  }
-};
+
+    test: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: URI
+    },
+
+    production: {
+      root: rootPath,
+      app: {
+        name: 'ufabc-matricula-server'
+      },
+      port: process.env.PORT || 3000,
+      db: URI
+    }
+  };
+}
+
+
+
+
 
 
 

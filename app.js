@@ -2,6 +2,7 @@ var express = require('express'),
   config = require('./config/config'),
   glob = require('glob');
 
+require('dotenv').config();
 var https = require('https');
 var pem = require('pem');
 
