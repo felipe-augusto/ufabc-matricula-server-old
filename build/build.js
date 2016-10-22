@@ -18,20 +18,23 @@ for (var j = 0; j < help.length; j ++) {
 }
 
 for (var i = 0; i < horarios.length; i ++) {
-    horarios[i].help = {};
-    s = new difflib.getCloseMatches(horarios[i].teoria, find_help);
-    if (s[0] != null) {
-        horarios[i].teoria_help = help_dict[s[0]];
-    } else {
-        // console.log(horarios[i].disciplina + " " + horarios[i].teoria);
+
+    if (horarios[i].teoria != null) {
+        s = new difflib.getCloseMatches(horarios[i].teoria.toLowerCase(), find_help);
+        if (s[0] != null) {
+            horarios[i].teoria_help = help_dict[s[0]];
+        }
     }
-    // pratica nao existe por hora
-    // s = new difflib.getCloseMatches(horarios[i].pratica, find_help);
-    // if (s[0] != null) {
-    //    horarios[i].pratica_help = help_dict[s[0]];
-    // }
+
+    if (horarios[i].pratica != null) {
+        s = new difflib.getCloseMatches(horarios[i].pratica.toLowerCase(), find_help);
+        if (s[0] != null) {
+           horarios[i].pratica_help = help_dict[s[0]];
+        }
+    }
 
     console.log("Calculando disciplina: " + i);
 }
 
+console.log("Escrevendo arquivo PDF");
 jsonfile.writeFileSync(file, horarios);

@@ -2,7 +2,24 @@
 
 Web service que alimenta ufabc-matricula-extension, extensão para Google Chrome que extende e aumenta as funcionalidades do sistema de matrículas da UFABC.
 
-## Primeiros passos (extraindo dados)
+## Início rápido
+
+Com o Node.js instalado e o MongoDB também, vá dentro da pasta raiz e digite:
+
+```sh
+$ npm install
+```
+
+Provavelmente todos os dados do servidor já estão prontos (horarios e disciplinas), então basta digitar:
+
+```sh
+$ npm start
+```
+
+Abra o browser e digite o endereço: `http://localhost:3000/disciplinas`.
+A lista de turmas, com seus respectivos professores e notas no UFABC HELP! deverá aparecer.
+
+## Como funciona
 
 ### Extraindo dados do UFABC HELP!
 
@@ -23,30 +40,25 @@ Um arquivo chamado **help.json**, será criado com os dados extraídos do UFABC 
 
 ### Extraindo dados do PDF de horários da matrícula da UFABC (beta)
 
-O arquivo **horarios.json** representa o resultado do que faremos a seguir: ainda dentro da pasta build, existe a opção de passarmos o PDF das disciplinas, turmas e horários da UFABC para extrairmos os dados pertinentes. Novamente, precisamos de algumas dependências:
+O arquivo **horarios.json** representa o resultado do que faremos a seguir: ainda dentro da pasta build, existe a opção de passarmos o PDF das disciplinas, turmas e horários da UFABC para extrairmos os dados pertinentes. Caso você não tenha instalado as dependências não se esqueça de fazer:
 
 ```sh
-$ pip install pyPDF
-$ pip install requests
+$ npm install
 ```
 
 Para extrair os dados, rode:
 
 ```sh
-$ python horarios_extractor.py -u url_horarios.pdf
+$ node pdf_parser.js url
 ```
+
+Onde `url` é o link do PDF dos horários disponibilizado pela PROGRAD.
 
 Pronto, um arquivo **horarios.json** deve aparecer dentro da pasta `build/tmp`.
 
 ### Mesclando dados
 
-Agora que temos ambos os arquivos **horarios.json** e **help.json** podemos mesclar os dois para obtermos uma única "tabela" que será enviada para todos os alunos que estiverem com a extensão do Google Chrome ativada. Agora começamos a fazer a transição da parte de processamento de dados para o servidor web especificamente.
-
-Com o Node.js instalado e MongoDB também, vá dentro da pasta root digite:
-
-```sh
-$ npm install
-```
+Agora que temos ambos os arquivos **horarios.json** e **help.json** podemos mesclar os dois para obtermos uma único arquivo JSON que será enviado para todos os alunos que estiverem com a extensão do Google Chrome ativada. Agora começamos a fazer a transição da parte de processamento de dados para o servidor web especificamente.
 
 Caminhe até a pasta build e então faça:
 
@@ -76,4 +88,4 @@ A lista de turmas, com seus respectivos professores e notas no UFABC HELP! dever
 - [x] Join na lista de professores com os dados do UFABC HELP!
 - [x] Carregar lista para o banco de dados (DAR .JSON)
 - [x] Criar endpoints da API
-- [ ] Melhorar parsing do PDF de horários (SOFRÍVEL)
+- [x] Melhorar parsing do PDF de horários (SOFRÍVEL)
