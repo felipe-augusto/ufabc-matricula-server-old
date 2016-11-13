@@ -17,7 +17,8 @@ module.exports = function (app) {
   app.use('/', router);
 };
 
-last_date = new Date();
+var last_date = new Date();
+var last_matriculas = new Date();
 
 var todasMatriculas = {};
 
@@ -134,8 +135,23 @@ router.post('/cortes', function (req, res, next) {
   var aluno_id = parseInt(req.body.aluno_id);
   // recebe um aluno_id e disciplina_id
   Disciplina.aggregate([{
-    $match: {disciplina_id : disciplina_id}
-  }, {
+    $match : {
+      disciplina_id: disciplina_id
+    }
+  },{
+    $unwind : "$alunos_matriculados"
+  },{
+   $lookup:
+     {
+       from: "alunos",
+       localField: "alunos_matriculados",
+       foreignField: "aluno_id",
+       as: "alunos_matriculados"
+     }
+  },
+  {
+    $match: { "alunos_matriculados": { $ne: [] } }
+  },{
     $unwind : "$alunos_matriculados"
   },{
     $unwind : "$alunos_matriculados.cursos"
@@ -321,6 +337,8 @@ router.get('/update_matriculas', function (req, res, next) {
   res.send("done");
 });
 
+
+// this is for local testing purposes only
 function getMatriculas(matriculas) {
   data = JSON.parse(fs.readFileSync(matriculas, 'utf8').replace('matriculas=', '').replace(';', ''));
 
@@ -467,6 +485,14 @@ Array.prototype.pushIfNotExist = function(element, comparer) {
 
 // NI, GA, FUV, FEMEC, BIODIVERSIDADE -> 2 QUAD
 // QUANTICA, BIOQUIMICA, EDS
+// 'BCM0504-15',
+// 'BCN0404-15',
+// 'BCN0402-15',
+// 'BCJ0204-15',
+// 'BCL0306-15',
+// 'BCK0103-15',
+// 'BCL0308-15',
+// 'BIQ0602-15'
 
 var disciplinas_ideal = [
   'BCM0504-15',
@@ -480,7 +506,6 @@ var disciplinas_ideal = [
 ]
 
 // atualiza as disciplinas para o quad ideal
-
 router.get('/update_ideal', function (req, res, next) {
   // para cada discipina ideal faca
   for (var j = 0; j < disciplinas_ideal.length; j++) {
@@ -493,3 +518,89 @@ router.get('/update_ideal', function (req, res, next) {
   }
   res.json('OK');
 });
+
+router.get('/test_look', function (req, res, next) {
+  Disciplina.aggregate([{
+    $match : {
+      disciplina_id: 205
+    }
+  },{
+    $unwind : "$alunos_matriculados"
+  },{
+   $lookup:
+     {
+       from: "alunos",
+       localField: "alunos_matriculados",
+       foreignField: "aluno_id",
+       as: "alunos_matriculados"
+     }
+  },
+  {
+    $match: { "alunos_matriculados": { $ne: [] } }
+  },{
+    $unwind : "$alunos_matriculados"
+  },{
+    $unwind : "$alunos_matriculados.cursos"
+  }, {
+    $project: {
+      turno: 1,
+      ideal_quad: 1,
+      aluno_id: "$alunos_matriculados.aluno_id",
+      aluno : "$alunos_matriculados.cursos",
+      obrigatorias: "$obrigatorias"
+    }
+  }], function (err, disciplinas) {
+    console.log(err);
+    console.log(disciplinas);
+    res.json(disciplinas);
+  })
+});
+
+router.get('/update_matriculas', function (req, res, next) {
+  // deixa atualiza de 30 em 30, no max
+  if (new Date() - last_matriculas > 30000) {
+    last_matriculas = new Date();
+    matriculas = getMatriculas('matriculas1.json');
+    // only query the disciplines that changed
+    // make sure that we got something
+    if(Object.keys(todasMatriculas).length == 0) {
+      todasMatriculas = matriculas;
+    }
+
+    var changed = [];
+
+    // itera sobre as matriculas procurando por mudancas
+    for (key in matriculas) {
+      var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+      var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+      // se der diferente de zero, algo mudou
+      if (saiu.length != 0 || entraram.length != 0) {
+        console.log("Disciplina " + key + " mudou");
+        changed.push(parseInt(key));
+      }
+    }
+
+    if(changed.length > 0) {
+      Disciplina.find({disciplina_id: {'$in': changed}}).exec(function (err, disciplinas) {
+        if(err) {
+          console.log(err);
+        } else {
+          // update every discipline
+          disciplinas.map(function (item) {
+            console.log("dando update em : " + item.disciplina_id);
+            var arr = matriculas[item.disciplina_id.toString()];
+            item.alunos_matriculados = arr;
+            item.save();
+          });
+          todasMatriculas = matriculas;
+          res.json('OK');
+        }
+      });
+    } else {
+      res.json('NADA A SE FAZER');
+    };
+  } else {
+    res.json("NAO SE PASSARAM 30 SEGUNDOS");
+  }
+
+})

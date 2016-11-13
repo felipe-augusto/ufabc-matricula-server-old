@@ -6,7 +6,7 @@ var DisciplinaSchema = new mongoose.Schema({
   obrigatorias: [Number],
   codigo: String,
   ideal_quad: Boolean,
-  alunos_matriculados: [mongoose.model('Aluno').schema],
+  alunos_matriculados: [Number],
   turno: String
 });
 

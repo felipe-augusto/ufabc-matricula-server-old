@@ -83,12 +83,12 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// horario_pratica - teoria (teoria)
 	// teoria - pratica (pratica)
 	var titles = {
-			codigo: 'A',
-	        disciplina : 'TURMAS',
-	        horario_pratica: 'OFERTADO POR',
+			codigo: 'COD. TURMA SIE',
+	        disciplina : 'TURMA',
+	        horario_pratica: 'T-P-I',
 	        teoria: 'DOCENTE TEORIA',
 	        pratica : 'DOCENTE PRÁTICA',
-	        horario_teoria: 'OFERTADO POR'
+	        horario_teoria: 'TEORIA'
 	}
 
 	var positions = {
