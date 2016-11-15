@@ -80,13 +80,21 @@ router.post('/test', function (req, res, next) {
     curso_obj['id_curso'] = cursos_ids[curso_obj['nome_curso']];
     cursos_salvar.push(curso_obj);
   }
-  Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
-    if (err) {
-      res.send(err);
+  Aluno.findOne({aluno_id: aluno_id}).exec(function (err, aluno) {
+    if(aluno) {
+      aluno.cursos = cursos_salvar;
+      aluno.save();
+      res.json("aluno atualizado");
     } else {
-      res.send(aluno);
+
+      Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
+        if (err) {
+          res.send(err);
+        } else {
+          res.send(aluno);
+        }
+      })
     }
-    
   })
 });
 
@@ -362,7 +370,26 @@ function getMatriculas(matriculas) {
   return matriculas;
 }
 
-todasMatriculas = getMatriculas('matriculas.json');
+// this is for local testing purposes only
+function transformMatriculas(data) {
+  var matriculas = {};
+
+  // data sao as disciplinas que ele se matriculou
+  for (var aluno_id in data) {
+    for (var i = 0; i < data[aluno_id].length; i++) {
+      // data[key][i] é o id_disciplina que o aluno_id (key pegou)
+      try {
+        matriculas[data[aluno_id][i]] = matriculas[data[aluno_id][i]].concat([parseInt(aluno_id)]);
+      } catch (err) {
+        matriculas[data[aluno_id][i]] = [parseInt(aluno_id)];
+      }
+    }
+  }
+
+  return matriculas;
+}
+
+// todasMatriculas = getMatriculas('matriculas.json');
 
 function recalculaSoft(){
     matriculas = getMatriculas('matriculas1.json');
@@ -483,7 +510,8 @@ Array.prototype.pushIfNotExist = function(element, comparer) {
     }
 }; 
 
-// NI, GA, FUV, FEMEC, BIODIVERSIDADE -> 2 QUAD
+// 2 QUAD
+// NI, GA, FUV, FEMEC, BIODIVERSIDADE
 // QUANTICA, BIOQUIMICA, EDS
 // 'BCM0504-15',
 // 'BCN0404-15',
@@ -494,15 +522,23 @@ Array.prototype.pushIfNotExist = function(element, comparer) {
 // 'BCL0308-15',
 // 'BIQ0602-15'
 
+// 3QUAD
+// FETERM, PI, FVV, TQ
+// IAM, CTS
+// 'BCJ0205-15', // FETERM
+// 'BCM0505-15', // PI
+// 'BCN0407-15', // FVV
+// 'BCL0307-15', // TQ
+// 'BCK0104-15', // IAM
+// 'BIR0603-15' // CTS
+
 var disciplinas_ideal = [
-  'BCM0504-15',
-  'BCN0404-15',
-  'BCN0402-15',
-  'BCJ0204-15',
-  'BCL0306-15',
-  'BCK0103-15',
-  'BCL0308-15',
-  'BIQ0602-15'
+  'BCJ0205-15', // FETERM
+  'BCM0505-15', // PI
+  'BCN0407-15', // FVV
+  'BCL0307-15', // TQ
+  'BCK0104-15', // IAM
+  'BIR0603-15' // CTS
 ]
 
 // atualiza as disciplinas para o quad ideal
@@ -556,51 +592,99 @@ router.get('/test_look', function (req, res, next) {
   })
 });
 
-router.get('/update_matriculas', function (req, res, next) {
-  // deixa atualiza de 30 em 30, no max
-  if (new Date() - last_matriculas > 30000) {
-    last_matriculas = new Date();
-    matriculas = getMatriculas('matriculas1.json');
-    // only query the disciplines that changed
-    // make sure that we got something
-    if(Object.keys(todasMatriculas).length == 0) {
-      todasMatriculas = matriculas;
-    }
-
-    var changed = [];
-
-    // itera sobre as matriculas procurando por mudancas
-    for (key in matriculas) {
-      var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
-      var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
-      // se der diferente de zero, algo mudou
-      if (saiu.length != 0 || entraram.length != 0) {
-        console.log("Disciplina " + key + " mudou");
-        changed.push(parseInt(key));
-      }
-    }
-
-    if(changed.length > 0) {
-      Disciplina.find({disciplina_id: {'$in': changed}}).exec(function (err, disciplinas) {
-        if(err) {
-          console.log(err);
-        } else {
-          // update every discipline
-          disciplinas.map(function (item) {
-            console.log("dando update em : " + item.disciplina_id);
-            var arr = matriculas[item.disciplina_id.toString()];
-            item.alunos_matriculados = arr;
-            item.save();
-          });
-          todasMatriculas = matriculas;
-          res.json('OK');
-        }
-      });
+// check if user exists in database
+router.post('/is_allowed', function (req, res, next) {
+  var aluno_id = req.body.aluno_id;
+  console.log(aluno_id);
+  Aluno.findOne({aluno_id : aluno_id}).exec(function (err, stu) {
+    if (stu) {
+      res.json("OK");
     } else {
-      res.json('NADA A SE FAZER');
-    };
-  } else {
-    res.json("NAO SE PASSARAM 30 SEGUNDOS");
+      res.json("NOT");
+    }
+  })
+})
+
+// last updated time of matriculas
+router.get('/last_time', function (req, res, next) {
+  res.json(last_matriculas);
+});
+
+// last updated time of matriculas
+router.get('/last_disciplina', function (req, res, next) {
+  res.json(todasMatriculas);
+});
+
+// update matriculas database
+router.post('/update_matriculas', function (req, res, next) {
+  if(req.body.data != null) {
+    // deixa atualiza de 30 em 30, no max
+    if (new Date() - last_matriculas > 20000) {
+      last_matriculas = new Date();
+      matriculas = transformMatriculas(req.body.data);
+      // only query the disciplines that changed
+      // make sure that we got something
+      // if(Object.keys(todasMatriculas).length == 0) {
+      //   todasMatriculas = matriculas;
+      // }
+
+      var changed = [];
+
+      // itera sobre as matriculas procurando por mudancas
+      for (key in matriculas) {
+        var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+        var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+        // se der diferente de zero, algo mudou
+        if (saiu.length != 0) {
+          console.log("Disciplina (saiu)" + key + " mudou");
+          changed.push(parseInt(key));
+        }
+        if (entraram.length != 0) {
+          console.log("Disciplina (entrou)" + key + " mudou");
+          changed.push(parseInt(key));
+        }
+      }
+
+      // fix erro
+      for (key in todasMatriculas) {
+        var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+        var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+        // se der diferente de zero, algo mudou
+        if (saiu.length != 0) {
+          console.log("Disciplina (saiu)" + key + " mudou");
+          changed.push(parseInt(key));
+        }
+        if (entraram.length != 0) {
+          console.log("Disciplina (entrou)" + key + " mudou");
+          changed.push(parseInt(key));
+        }
+      }
+
+      // make sure is unique
+      changed = _.uniq(changed);
+
+      if(changed.length > 0) {
+        Disciplina.find({disciplina_id: {'$in': changed}}).exec(function (err, disciplinas) {
+          if(err) {
+            console.log(err);
+          } else {
+            // update every discipline
+            disciplinas.map(function (item) {
+              console.log("dando update em : " + item.disciplina_id);
+              var arr = matriculas[item.disciplina_id.toString()];
+              item.alunos_matriculados = arr;
+              item.save();
+            });
+            todasMatriculas = matriculas;
+            res.json('OK');
+          }
+        });
+      } else {
+        res.json('NADA A SE FAZER');
+      };
+    } else {
+      res.json("NAO SE PASSARAM 30 SEGUNDOS");
+    }
   }
 
 })
