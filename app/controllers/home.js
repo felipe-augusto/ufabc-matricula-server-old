@@ -74,9 +74,10 @@ router.post('/test', function (req, res, next) {
     var curso_obj = {};
     curso_obj['cp'] = parseFloat(cursos[i].cp.replace(',','.'));
     curso_obj['cr'] = parseFloat(cursos[i].cr.replace(',','.'));
+    curso_obj['quads'] = parseFloat(cursos[i].quads.replace(',','.'));
     curso_obj['nome_curso'] = cursos[i].curso;
     curso_obj['turno'] = cursos[i].turno;
-    curso_obj['ind_afinidade'] = 0.07 * curso_obj['cr'] + 0.63 * curso_obj['cp'];
+    curso_obj['ind_afinidade'] = 0.07 * curso_obj['cr'] + 0.63 * curso_obj['cp'] + 0.005 * curso_obj['quads'];
     curso_obj['id_curso'] = cursos_ids[curso_obj['nome_curso']];
     cursos_salvar.push(curso_obj);
   }
@@ -86,7 +87,6 @@ router.post('/test', function (req, res, next) {
       aluno.save();
       res.json("aluno atualizado");
     } else {
-
       Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
         if (err) {
           res.send(err);
@@ -595,8 +595,7 @@ router.get('/test_look', function (req, res, next) {
 // check if user exists in database
 router.post('/is_allowed', function (req, res, next) {
   var aluno_id = req.body.aluno_id;
-  console.log(aluno_id);
-  Aluno.findOne({aluno_id : aluno_id}).exec(function (err, stu) {
+  Aluno.findOne({aluno_id : aluno_id}).lean().exec(function (err, stu) {
     if (stu) {
       res.json("OK");
     } else {
