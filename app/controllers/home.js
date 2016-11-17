@@ -70,32 +70,44 @@ router.post('/test', function (req, res, next) {
   var cursos = req.body.data;
   var aluno_id = req.body.aluno_id;
   var cursos_salvar = [];
+  var fail = false;
   for (var i = 0; i < cursos.length; i++) {
     var curso_obj = {};
-    curso_obj['cp'] = parseFloat(cursos[i].cp.replace(',','.'));
-    curso_obj['cr'] = parseFloat(cursos[i].cr.replace(',','.'));
-    curso_obj['quads'] = parseFloat(cursos[i].quads.replace(',','.'));
+    // caso falhe em carregar algo
+    try {
+      curso_obj['cp'] = parseFloat(cursos[i].cp.replace(',','.'));
+      curso_obj['cr'] = parseFloat(cursos[i].cr.replace(',','.'));
+      curso_obj['quads'] = parseFloat(cursos[i].quads.replace(',','.'));
+    } catch (err) {
+      res.json("erro na hora de atualizar aluno. extensao desatualizada?");
+      fail = true;
+      return;
+    }
     curso_obj['nome_curso'] = cursos[i].curso;
     curso_obj['turno'] = cursos[i].turno;
     curso_obj['ind_afinidade'] = 0.07 * curso_obj['cr'] + 0.63 * curso_obj['cp'] + 0.005 * curso_obj['quads'];
     curso_obj['id_curso'] = cursos_ids[curso_obj['nome_curso']];
     cursos_salvar.push(curso_obj);
   }
-  Aluno.findOne({aluno_id: aluno_id}).exec(function (err, aluno) {
-    if(aluno) {
-      aluno.cursos = cursos_salvar;
-      aluno.save();
-      res.json("aluno atualizado");
-    } else {
-      Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
-        if (err) {
-          res.send(err);
-        } else {
-          res.send(aluno);
-        }
-      })
-    }
-  })
+  if(!fail) {
+    Aluno.findOne({aluno_id: aluno_id}).exec(function (err, aluno) {
+      if(aluno) {
+        aluno.cursos = cursos_salvar;
+        aluno.save();
+        res.json("aluno atualizado");
+      } else {
+        Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
+          if (err) {
+            res.send(err);
+          } else {
+            res.send(aluno);
+          }
+        })
+      }
+    })
+  } else {
+    res.json("erro na hora de atualizar aluno. extensao desatualizada?");
+  }
 });
 
 var discover_obg = {
@@ -434,6 +446,81 @@ function recalculaSoft(){
     // verifica quais dessas matriculas foram modificadas e da update apenas nelas
     return;
 }
+
+function update () {
+    request('https://matricula.ufabc.edu.br/cache/matriculas.js', function (error, response, body) {
+      try {
+        data = JSON.parse(body.replace('matriculas=', '').replace(';', ''));
+      } catch (err) {
+        console.log("N calculando...");
+        return;
+      }
+      if(data) {
+        if (new Date() - last_matriculas > 30000) {
+              last_matriculas = new Date();
+              matriculas = transformMatriculas(data);
+
+              var changed = [];
+
+              for (key in matriculas) {
+                var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+                var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+                // se der diferente de zero, algo mudou
+                if (saiu.length != 0) {
+                  console.log("Disciplina (saiu)" + key + " mudou");
+                  changed.push(parseInt(key));
+                }
+                if (entraram.length != 0) {
+                  console.log("Disciplina (entrou)" + key + " mudou");
+                  changed.push(parseInt(key));
+                }
+              }
+
+              // fix erro
+              for (key in todasMatriculas) {
+                var saiu = _.difference(todasMatriculas[key], matriculas[key]); // id do aluno que saiu da disciplina
+                var entraram = _.pullAll(_.xor(matriculas[key], todasMatriculas[key]), saiu); // id do aluno que entrou na disciplina
+                // se der diferente de zero, algo mudou
+                if (saiu.length != 0) {
+                  console.log("Disciplina (saiu)" + key + " mudou");
+                  changed.push(parseInt(key));
+                }
+                if (entraram.length != 0) {
+                  console.log("Disciplina (entrou)" + key + " mudou");
+                  changed.push(parseInt(key));
+                }
+              }
+
+              // make sure is unique
+              changed = _.uniq(changed);
+
+              if(changed.length > 0) {
+                Disciplina.find({disciplina_id: {'$in': changed}}).exec(function (err, disciplinas) {
+                  if(err) {
+                    console.log(err);
+                  } else {
+                    // update every discipline
+                    disciplinas.map(function (item) {
+                      console.log("dando update em : " + item.disciplina_id);
+                      var arr = matriculas[item.disciplina_id.toString()];
+                      item.alunos_matriculados = arr;
+                      item.save();
+                    });
+                    todasMatriculas = matriculas;
+                    console.log('OK');
+                  }
+                });
+              } else {
+                console.log('NADA A SE FAZER');
+              };
+            } else {
+              console.log("NAO SE PASSARAM 30 SEGUNDOS");
+            }
+          }
+      })
+}
+
+setInterval(update, 60000);
 
 // pega a lista de todas as matriculas feitas e dá update
 function recalculaDisciplinas () {
