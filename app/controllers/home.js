@@ -520,7 +520,8 @@ function update () {
       })
 }
 
-setInterval(update, 60000);
+
+//setInterval(update, 60000);
 
 // pega a lista de todas as matriculas feitas e dá update
 function recalculaDisciplinas () {
