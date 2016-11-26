@@ -2,6 +2,8 @@ var express = require('express'),
   config = require('./config/config'),
   glob = require('glob');
 
+var cors = require('cors');
+
 require('dotenv').config();
 var https = require('https');
 var pem = require('pem');
@@ -12,6 +14,8 @@ models.forEach(function (model) {
 });
 
 var app = express();
+// allow cors
+app.use(cors({ origin : "*"} ));
 
 require('./config/express')(app, config);
 
