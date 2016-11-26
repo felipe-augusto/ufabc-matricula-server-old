@@ -6,6 +6,8 @@ var express = require('express'),
 var _ = require('lodash');
 var utils = require('../utils');
 
+var Disciplina = require("../models/disciplina");
+
 module.exports = function (app) {
   app.use('/stats/', router);
 };
@@ -18,6 +20,7 @@ var grouped_disciplinas = {};
 var demanda_geral = {};
 var chutes_inevitaveis = {};
 var info_all_cursos = {};
+var previsoes = [];
 
 // peagando as informacoes necessarias no site do matriculas
 utils.getDisciplinas(function (item) {
@@ -71,6 +74,15 @@ router.get('/info_all_cursos/:order', function (req, res, next) {
   res.json(_.orderBy(info_all_cursos, ['numeros.' + req.params.order], ['desc']));
 });
 
+// devolve a previsao de corte de terminado curso
+// ordenado por cr (BCT e BCH) e cp (restante)
+// se quiser todas as materias passe curso_id -> 0
+router.get('/previsao/:curso_id', function (req, res, next) {
+  previsao(parseInt(req.params.curso_id), function (resp) {
+  	res.json(resp);
+  })
+});
+
 
 // calcula quantas disciplinas uma pessoa pegou
 function calculaMateriasPorAluno() {
@@ -93,7 +105,7 @@ function calculaMateriasPorAluno() {
 function calculaDemanda(generic, type, id) {
 	if(Object.keys(grouped_disciplinas).length != 0) {
 		// filtra pelo curso
-		var por_curso = filtraCurso(id);
+		var por_curso = filtraCurso(id, grouped_disciplinas);
 		// ordena dependendo do criterio passado no endpoint
 		var resp = _.orderBy(por_curso, [generic, generic + '.' + type], ['asc', 'desc']);
 		return resp;
@@ -167,7 +179,7 @@ function calculaDemanda(generic, type, id) {
 			}
 		}
 		// filtrar por curso
-		var por_curso = filtraCurso(id);
+		var por_curso = filtraCurso(id, grouped_disciplinas);
 		// ordena dependendo do criterio passado no endpoint
 		var resp =_.orderBy(por_curso, [generic, generic + '.' + type], ['asc', 'desc']);
 		// dados de um curso especifico
@@ -220,23 +232,23 @@ function estatisticasCurso(resp) {
 }
 
 // filtra apenas as disciplinas de determinado curso dentre todas as disciplinas
-function filtraCurso(id) {
+function filtraCurso(id, array) {
 	var tmp = [];
 	// caso nao queira filtrar por curso
 	if(id == 0) {
-		return _.filter(grouped_disciplinas,
+		return _.filter(array,
 			function(item){
 				return true;
 		});
 	}
 	// um dos BI's
 	if(id == 20 || id == 22) {
-		tmp =  _.filter(grouped_disciplinas,
+		tmp =  _.filter(array,
 			function(item){
 				return _.find(item.curso, {'curso_id' : id, 'obrigatoriedade': 'obrigatoria'});
 		});
 	} else { // qualquer outro curso
-		tmp =  _.filter(grouped_disciplinas,
+		tmp =  _.filter(array,
 			function(item){
 				return _.find(item.curso, {'curso_id' : id}) && // curso desejado
 					!_.find(item.curso, {'curso_id' : 20, 'obrigatoriedade': 'obrigatoria'}) && // tira bct
@@ -324,4 +336,51 @@ function chutesInevitaveis() {
 		}
 		return chutes_inevitaveis;
 	}
+}
+
+// faz a previsao para determinado curso
+function previsao (id, cb) {
+	if(previsoes.length != 0) {
+		var filtrado = filtraCurso(parseInt(id), previsoes);
+		if(id == 20 || id == 22) {
+			return cb(_.orderBy(filtrado, ['corte.reserva', 'corte.ik', 'corte.cr'], ['desc', 'desc', 'desc']));
+		} else {
+			return cb(_.orderBy(filtrado, ['corte.reserva', 'corte.ik', 'corte.cp'], ['desc', 'desc', 'desc']));
+		}
+		
+	} else {
+		// verifica apenas quais disciplinas tem mais requisicoes que vagas
+		for (key in contagemMatriculas) {
+			if(todasDisciplinas[key] != null && !isNaN(parseInt(contagemMatriculas[todasDisciplinas[key].id]))) {
+				// guarda variaveis que irao compor o obj
+				var nome = todasDisciplinas[key].nome;
+				var codigo = todasDisciplinas[key].codigo;
+				var vagas = todasDisciplinas[key].vagas;
+				var requisicoes = parseInt(contagemMatriculas[todasDisciplinas[key].id]);
+				var obg = todasDisciplinas[key].obrigatoriedades;
+				if(requisicoes > vagas) {
+					// chama a funcao que faz os cortes
+					utils.getCortes(todasDisciplinas[key].id, nome, vagas, requisicoes, obg, codigo, function (nome, vagas, requisicoes, id, obg, codigo, resp, criterio) {
+						var obj = {};
+						var indice = Math.floor((vagas/requisicoes) * resp.length) - 1;;
+						obj.nome = nome;
+						obj.extensao = resp.length;
+						obj.corte = resp[indice];
+						obj.posicao = indice + 1;
+						obj.vagas = vagas;
+						obj.requisicoes = requisicoes;
+						obj.disciplina_id = parseInt(id);
+						obj.curso = obg;
+						obj.codigo = codigo;
+						obj.criterio = criterio;
+						if( (resp.length / requisicoes) >= 0.20) {
+							previsoes.push(obj);
+						}
+					})
+				}
+			}
+		}
+		cb("Calculando...");	
+	}
+
 }

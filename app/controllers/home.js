@@ -9,6 +9,8 @@ var fs = require('fs');
 
 var _ = require('lodash');
 
+var utils = require('../utils');
+
 // pega os models
 var Aluno = require("../models/aluno");
 var Disciplina = require("../models/disciplina");
@@ -154,80 +156,9 @@ router.post('/cortes', function (req, res, next) {
   var disciplina_id = parseInt(req.body.disciplina_id);
   var aluno_id = parseInt(req.body.aluno_id);
   // recebe um aluno_id e disciplina_id
-  Disciplina.aggregate([{
-    $match : {
-      disciplina_id: disciplina_id
-    }
-  },{
-    $unwind : "$alunos_matriculados"
-  },{
-   $lookup:
-     {
-       from: "alunos",
-       localField: "alunos_matriculados",
-       foreignField: "aluno_id",
-       as: "alunos_matriculados"
-     }
-  },
-  {
-    $match: { "alunos_matriculados": { $ne: [] } }
-  },{
-    $unwind : "$alunos_matriculados"
-  },{
-    $unwind : "$alunos_matriculados.cursos"
-  }, {
-    $project: {
-      turno: 1,
-      ideal_quad: 1,
-      aluno_id: "$alunos_matriculados.aluno_id",
-      aluno : "$alunos_matriculados.cursos",
-      obrigatorias: "$obrigatorias"
-    }
-  }], function (err, resp) {
-    // se nao conseguir pegar o turno
-    // eh pq nao tem conhecimento de nenhum cidado na turma
-    try {
-        var turno_disciplina = resp[0].turno;
-        var ideal = resp[0].ideal_quad;
-    } catch (err) {
-      res.json({pos: 1, total: 1});
-      return;
-    }
-    // verifica se tem reserva de vaga
-    var cleaned = resp.map(function (item) {
-      _.pull(item.obrigatorias, 22, 20); // BCT e BCH
-      var reserva = _.includes(item.obrigatorias, item.aluno.id_curso);
-      if (!reserva) {
-        item.aluno.ind_afinidade = 0;
-      }
-      return {  cr : item.aluno.cr,
-                cp: item.aluno.cp,
-                ik: item.aluno.ind_afinidade,
-                reserva: reserva,
-                turno: item.aluno.turno,
-                curso: item.aluno.nome_curso,
-                id: item.aluno_id}
-    });
-    // escolhe como vai filtrar por turno
-    var sort_turno = 0;
-    if (turno_disciplina == "diurno") {
-      sort_turno = 'asc';
-    } else if (turno_disciplina == "noturno") {
-      sort_turno = 'desc';
-    }
-
-    var sort_type = ""
-    if (ideal) {
-      sort_type = 'cr';
-    } else {
-      sort_type = 'cp';
-    }
-
-    var test = _.orderBy(cleaned, ['reserva', 'ik', 'turno', sort_type], ['desc', 'desc', sort_turno, 'desc']);
-    var sem_duplicados = _.uniqBy(test, 'id');
-    res.json(sem_duplicados);
-    }
-  )
+  utils.fazCorte(disciplina_id, function (item) {
+    res.json(item);
+  });
 })
 
 // metodo que simula
