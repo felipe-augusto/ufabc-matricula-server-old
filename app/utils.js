@@ -61,7 +61,7 @@ module.exports.cursos_ids = {
 	  'Bacharelado em Matemática': 21,
 	  'Bacharelado em Neurociência' : 24,
 	  'Bacharelado em Planejamento Territorial': 11,
-	  'Bacharelado em Políticas Públicas': 3,
+	  'Bacharelado em Políticas Públicas': 31,
 	  'Bacharelado em Química': 14,
 	  'Bacharelado em Relações Internacionais': 27,
 	  'Engenharia Aeroespacial': 26,
@@ -126,7 +126,7 @@ function fazCorte (disciplina_id, cb) {
         var turno_disciplina = resp[0].turno;
         var ideal = resp[0].ideal_quad;
     } catch (err) {
-      res.json({pos: 1, total: 1});
+      cb({pos: 1, total: 1});
       return;
     }
     // verifica se tem reserva de vaga
@@ -159,7 +159,7 @@ function fazCorte (disciplina_id, cb) {
       sort_type = 'cp';
     }
 
-    var test = _.orderBy(cleaned, ['reserva', 'ik', 'turno', sort_type], ['desc', 'desc', sort_turno, 'desc']);
+    var test = _.orderBy(cleaned, ['reserva', 'turno', 'ik', sort_type], ['desc', sort_turno, 'desc', 'desc']);
     var sem_duplicados = _.uniqBy(test, 'id');
     cb(sem_duplicados, sort_type);
     }

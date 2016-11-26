@@ -190,7 +190,7 @@ function calculaDemanda(generic, type, id) {
 
 // lista vagas, requisicoes, etc de determinado curso
 function infoCurso(id) {
-	return estatisticasCurso(filtraCurso(parseInt(id)));
+	return estatisticasCurso(filtraCurso(parseInt(id), grouped_disciplinas));
 }
 
 // calcula as estatisticas de determinado curso
