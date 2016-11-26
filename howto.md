@@ -6,7 +6,7 @@ Ele ordena decrescentemente do maior gap absoluto (diferenca entre requisicoes e
 no noturno todos os cursos.
 
 returna array de objetos dessa forma:
-
+```javascript
 {
 	"numeros": {
 		"total_vagas_geral": 6983,
@@ -24,7 +24,7 @@ returna array de objetos dessa forma:
 	},
 	"curso": "Engenharia de Gestão"
 }
-
+```
 order -> total_vagas_geral, total_requisicoes_geral, gap_geral_abs ... gap_noturno_rel
 
 ENDPOINT: http://desolate-lake-30493.herokuapp.com/stats/demanda/:turno/:type/:curso_id
@@ -39,7 +39,7 @@ curso_id -> 16, 23, 20, 0 (lista completa em utils.js)
 P.S: lista geral chame com curso_id = 0
 
 array de objetos
-
+```
 {
 	"geral": {
 		"vagas": 90,
@@ -70,4 +70,5 @@ array de objetos
 		"abs_ratio": 97,
 		"rel_ratio": 3.1555555555555554
 	}
-},
+}
+```
