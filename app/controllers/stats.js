@@ -14,13 +14,16 @@ module.exports = function (app) {
 
 // variaveis globais que evitam retrabalho
 // pois as informacoes nao mudam
-var contagemMatriculas, todasDisciplinas, matriculas;
+var contagemMatriculas = {};
+var todasDisciplinas = {};
+var matriculas = {};
 var materias_alunos = {};
 var grouped_disciplinas = {};
 var demanda_geral = {};
 var chutes_inevitaveis = {};
 var info_all_cursos = {};
 var previsoes = [];
+var lista_disciplinas = [];
 
 // peagando as informacoes necessarias no site do matriculas
 utils.getDisciplinas(function (item) {
@@ -83,6 +86,22 @@ router.get('/previsao/:curso_id', function (req, res, next) {
   })
 });
 
+// pega as informacoes de determinado curso
+// passe id = 0, caso nao queira filtrar por curso
+router.get('/previsao_disc/:id', function (req, res, next) {
+  res.json(previsaoDisciplina(parseInt(req.params.id)));
+});
+
+// pega as informacoes de determinado curso
+// passe id = 0, caso nao queira filtrar por curso
+router.get('/lista_disciplinas', function (req, res, next) {
+	  res.json(previsoes.map(function (item){
+  	  	return {
+	  		disciplina_id : item.disciplina_id,
+	  		nome: item.nome
+	  	};
+  	  }));
+});
 
 // calcula quantas disciplinas uma pessoa pegou
 function calculaMateriasPorAluno() {
@@ -332,10 +351,17 @@ function chutesInevitaveis() {
 		chutes_inevitaveis = {
 			"geral" : ine_geral,
 			"noturno" : ine_noturno,
-			"diurno": ine_matutino
+			"matutino": ine_matutino
 		}
 		return chutes_inevitaveis;
 	}
+}
+
+// encontra a disciplina na lista de previsoes
+function previsaoDisciplina(id) {
+	return previsoes.filter(function (item) {
+		return item.disciplina_id == id;
+	})[0];
 }
 
 // faz a previsao para determinado curso
@@ -384,3 +410,14 @@ function previsao (id, cb) {
 	}
 
 }
+
+// o problema dos tres metodos para pegar as informacoes no site da matricula
+// vamos chamar algumas funcoes quando as informacoes estiverem prontas
+var interval_necessary;
+interval_necessary = setInterval(function () {
+	if(Object.keys(contagemMatriculas).length != 0 && Object.keys(matriculas).length != 0 && Object.keys(todasDisciplinas).length != 0) {
+		clearInterval(interval_necessary);
+		calculaDemandaGeral();
+		previsao(0, function(){});
+	}
+}, 1000);
