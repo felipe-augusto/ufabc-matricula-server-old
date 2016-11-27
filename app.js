@@ -18,6 +18,12 @@ var app = express();
 app.use(cors({ origin : "*"} ));
 
 require('./config/express')(app, config);
+app.use('/static', express.static(__dirname + '/public'));
+
+// root send ufabc stats
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.listen(config.port, function () {
   console.log('Express server listening on port ' + config.port);
