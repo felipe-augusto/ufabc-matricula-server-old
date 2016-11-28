@@ -69,12 +69,12 @@ router.get('/info_curso/:id', function (req, res, next) {
 
 // devolve informacoes gerais sobre todos os curso
 // order pode assumir diversos valores: vide o object que a funcao retorna
-router.get('/info_all_cursos/:order', function (req, res, next) {
+router.get('/info_all_cursos', function (req, res, next) {
   for (key in utils.cursos_ids) {
   	info_all_cursos[key] = infoCurso(utils.cursos_ids[key]);
   	info_all_cursos[key].curso = key;
   }
-  res.json(_.orderBy(info_all_cursos, ['numeros.' + req.params.order], ['desc']));
+  res.json(info_all_cursos);
 });
 
 // devolve a previsao de corte de terminado curso
