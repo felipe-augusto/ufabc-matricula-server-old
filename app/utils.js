@@ -51,7 +51,6 @@ module.exports.getCortes = function (id, vagas, nomes, requisicoes, obg, codigo,
 
 module.exports.cursos_ids = {
 	  'Bacharelado em Ciências da Computação' : 16,
-	  'Bacharelado em Ciência da Computação': 16,
 	  'Bacharelado em Ciência e Tecnologia': 20,
 	  'Bacharelado em Ciências Biológicas': 17,
 	  'Bacharelado em Ciências Econômicas': 1,
