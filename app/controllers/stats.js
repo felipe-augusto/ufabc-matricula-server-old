@@ -125,8 +125,12 @@ function calculaDemanda(generic, type, id) {
 	if(Object.keys(grouped_disciplinas).length != 0) {
 		// filtra pelo curso
 		var por_curso = filtraCurso(id, grouped_disciplinas);
+		// filtra pelo turno
+		por_curso = por_curso.filter(function(item) {
+			return item[generic];
+		});
 		// ordena dependendo do criterio passado no endpoint
-		var resp = _.orderBy(por_curso, [generic, generic + '.' + type], ['asc', 'desc']);
+		var resp = _.orderBy(por_curso, [generic + '.' + type], ['desc']);
 		return resp;
 	} else {
 		for (key in contagemMatriculas) {
@@ -412,6 +416,7 @@ function previsao (id, cb) {
 }
 
 // o problema dos tres metodos para pegar as informacoes no site da matricula
+// eh que sao assincronos
 // vamos chamar algumas funcoes quando as informacoes estiverem prontas
 var interval_necessary;
 interval_necessary = setInterval(function () {

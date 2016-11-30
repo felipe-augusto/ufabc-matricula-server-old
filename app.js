@@ -5,8 +5,6 @@ var express = require('express'),
 var cors = require('cors');
 
 require('dotenv').config();
-var https = require('https');
-var pem = require('pem');
 
 var models = glob.sync(config.root + '/app/models/*.js');
 models.forEach(function (model) {
@@ -28,12 +26,4 @@ app.get('/', function (req, res) {
 app.listen(config.port, function () {
   console.log('Express server listening on port ' + config.port);
 });
-
-// pem.createCertificate({days:1, selfSigned:true}, function(err, keys){
-//   var app = express();
-
-//   require('./config/express')(app, config);
-
-//   https.createServer({key: keys.serviceKey, cert: keys.certificate}, app).listen(3000);
-// });
 

@@ -4,7 +4,6 @@ var express = require('express'),
   request = require('request');
 
 var path = require('path');
-var firstBy = require('thenby');
 var fs = require('fs');
 
 var _ = require('lodash');
