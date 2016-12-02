@@ -44,10 +44,9 @@ router.get('/materias_alunos', function (req, res, next) {
 });
 
 // calcula a demanda de determinado curso
-// type -> abs_ratio, rel_ratio
 // passe curso_id = 0, caso nao queira filtrar por curso
-router.get('/demanda/:turno/:type/:curso_id', function (req, res, next) {
-	res.json(calculaDemanda(req.params.turno, req.params.type, parseInt(req.params.curso_id)));
+router.get('/demanda/:turno/:curso_id', function (req, res, next) {
+	res.json(calculaDemanda(req.params.turno, parseInt(req.params.curso_id)));
   
 });
 
@@ -121,7 +120,7 @@ function calculaMateriasPorAluno() {
 }
 
 // lista as disciplinas mais concorridas de determinado curso
-function calculaDemanda(generic, type, id) {
+function calculaDemanda(generic, id) {
 	if(Object.keys(grouped_disciplinas).length != 0) {
 		// filtra pelo curso
 		var por_curso = filtraCurso(id, grouped_disciplinas);
@@ -130,8 +129,7 @@ function calculaDemanda(generic, type, id) {
 			return item[generic];
 		});
 		// ordena dependendo do criterio passado no endpoint
-		var resp = _.orderBy(por_curso, [generic + '.' + type], ['desc']);
-		return resp;
+		return por_curso;
 	} else {
 		for (key in contagemMatriculas) {
 			var name, turno;
@@ -201,13 +199,7 @@ function calculaDemanda(generic, type, id) {
 				grouped_disciplinas[key].matutino.rel_ratio = variance;
 			}
 		}
-		// filtrar por curso
-		var por_curso = filtraCurso(id, grouped_disciplinas);
-		// ordena dependendo do criterio passado no endpoint
-		var resp =_.orderBy(por_curso, [generic, generic + '.' + type], ['asc', 'desc']);
-		// dados de um curso especifico
-		return resp;
-		
+		return;	
 	}
 }
 
