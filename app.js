@@ -3,6 +3,8 @@ var express = require('express'),
   glob = require('glob');
 
 var cors = require('cors');
+var bodyParser = require('body-parser');
+
 
 require('dotenv').config();
 
@@ -12,6 +14,9 @@ models.forEach(function (model) {
 });
 
 var app = express();
+// allow bigger payloads
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 // allow cors
 app.use(cors({ origin : "*"} ));
 

@@ -93,9 +93,9 @@ router.post('/test', function (req, res, next) {
   if(!fail) {
     Aluno.findOne({aluno_id: aluno_id}).exec(function (err, aluno) {
       if(aluno) {
-        aluno.cursos = cursos_salvar;
-        aluno.save();
-        res.json("aluno atualizado");
+        // aluno.cursos = cursos_salvar;
+        // aluno.save();
+        res.json("nao vou atualizar");
       } else {
         Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
           if (err) {
@@ -550,13 +550,33 @@ Array.prototype.pushIfNotExist = function(element, comparer) {
 // 'BCK0104-15', // IAM
 // 'BIR0603-15' // CTS
 
+// 1 QUAD
+// 'BCM0506-15', //COMUNICACAO E REDES
+// 'BCJ0203-15', // ELETROMAG 
+// 'BIN0406-15', // IPE
+// 'BCN0405-15', // IEDO
+// 'BIR0004-15', //EPISTEMOLOGICAS
+// 'BHO0102-15', // DESENVOL. E SUSTE.
+// 'BHO0002-15', // PENSA. ECONOMICO
+// 'BHP0201-15', // TEMAS E PROBLE
+// 'BHO0101-15', // ESTADO E RELA
+// 'BIR0603-15' // CTS
+// 'BHQ0003-15', // INTEPRE. BRASIL
+// 'BHQ0001-15', // IDENT.E CULTURA
+
 var disciplinas_ideal = [
-  'BCJ0205-15', // FETERM
-  'BCM0505-15', // PI
-  'BCN0407-15', // FVV
-  'BCL0307-15', // TQ
-  'BCK0104-15', // IAM
-  'BIR0603-15' // CTS
+  'BCM0506-15', //COMUNICACAO E REDES
+  'BCJ0203-15', // ELETROMAG 
+  'BIN0406-15', // IPE
+  'BCN0405-15', // IEDO
+  'BIR0004-15', //EPISTEMOLOGICAS
+  'BHO0102-15', // DESENVOL. E SUSTE.
+  'BHO0002-15', // PENSA. ECONOMICO
+  'BHP0201-15', // TEMAS E PROBLE
+  'BHO0101-15', // ESTADO E RELA
+  'BIR0603-15', // CTS
+  'BHQ0003-15', // INTEPRE. BRASIL
+  'BHQ0001-15', // IDENT.E CULTURA
 ]
 
 // atualiza as disciplinas para o quad ideal

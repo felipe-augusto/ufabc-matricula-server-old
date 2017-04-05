@@ -1,4 +1,5 @@
 import re
+import time
 import sys
 import getopt
 import json
@@ -45,8 +46,8 @@ def main(argv):
 
     print 'Efetuando Login no UFABC HELP!'
 
-    browser.open("http://www.ufabchelp.me/avaliacoes/")
-    response1 = browser.follow_link(text_regex=r"Login com Facebook", nr=0)
+    browser.open("http://www.ufabchelp.me/avaliacoes/index.php")
+    response1 = browser.follow_link(url_regex=r"oauth", nr=0)
 
     json_previous = []
 

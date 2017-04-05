@@ -51,6 +51,12 @@ var work = function (obj, titles) {
         tmp.pop();
         obj.disciplina = tmp.join(' ');
 
+        // horrible fix 
+        if(obj.teoria != null) {
+        	obj.teoria = obj.teoria.replace("MATRICULA EM DISCIPLINAS - TURMAS  2017.2", '');
+        	if (obj.teoria == "") obj.teoria = null;
+        }
+        
         response.push(obj);
         console.log(obj);
 	}
@@ -83,12 +89,12 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// horario_pratica - teoria (teoria)
 	// teoria - pratica (pratica)
 	var titles = {
-			codigo: 'COD. TURMA SIE',
-	        disciplina : 'TURMA',
-	        horario_pratica: 'T-P-I',
+			codigo: 'CÓD. TURMA',
+	        disciplina : 'TURMA3',
+	        horario_pratica: 'PRÁTICA',
 	        teoria: 'DOCENTE TEORIA',
-	        pratica : 'DOCENTE PRÁTICA',
-	        horario_teoria: 'TEORIA'
+	        pratica : 'DOCENTE PRATICA',
+	        horario_teoria: 'TEORIA '
 	}
 
 	var positions = {

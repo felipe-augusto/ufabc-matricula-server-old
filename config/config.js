@@ -36,7 +36,7 @@ if(process.env.DB_USER == "true") {
     }
   };
 } else {
-  var URI = 'mongodb://' + process.env.DB_USER + ':' + process.env.DB_PASSWORD + '@ds153657.mlab.com:53657/ufabc2';
+  var URI = 'mongodb://' + process.env.DB_USER + ':' + process.env.DB_PASSWORD + '@ds151450.mlab.com:51450/ufabc3';
   var config = {
     development: {
       root: rootPath,
