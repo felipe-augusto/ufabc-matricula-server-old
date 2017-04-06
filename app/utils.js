@@ -63,40 +63,48 @@ module.exports.getCortes = function (id, vagas, nomes, requisicoes, obg, codigo,
 }
 
 module.exports.cursos_ids = {
-	  'Bacharelado em Ciências da Computação' : 16,
-	  'Bacharelado em Ciência e Tecnologia': 20,
-	  'Bacharelado em Ciências Biológicas': 17,
-	  'Bacharelado em Ciências Econômicas': 1,
-	  'Bacharelado em Ciências e Humanidades': 22,
-	  'Bacharelado em Filosofia': 10,
-	  'Bacharelado em Física': 28,
-	  'Bacharelado em Matemática': 21,
-	  'Bacharelado em Neurociência' : 24,
-	  'Bacharelado em Planejamento Territorial': 11,
-	  'Bacharelado em Políticas Públicas': 31,
-	  'Bacharelado em Química': 14,
-	  'Bacharelado em Relações Internacionais': 27,
-	  'Engenharia Aeroespacial': 26,
-	  'Engenharia Ambiental e Urbana': 6,
-	  'Engenharia Biomédica': 18,
-	  'Engenharia de Energia': 7,
-	  'Engenharia de Gestão': 23,
-	  'Engenharia de Informação' : 8,
-	  'Engenharia de Instrumentação, Automação e Robótica': 2,
-	  'Engenharia de Materiais': 15,
-	  'Licenciatura em Ciências Biológicas': 13,
-	  'Licenciatura em Física': 25,
-	  'Licenciatura em Matemática': 9,
-	  'Licenciatura em Química': 4
+  'Bacharelado em Ciências da Computação' : 73,
+  'Bacharelado em Ciência da Computação': 73,
+  'Bacharelado em Ciência e Tecnologia': 76,
+  'Bacharelado em Ciências Biológicas': 72,
+  'Bacharelado em Ciências Econômicas': 60,
+  'Bacharelado em Ciências e Humanidades': 78,
+  'Bacharelado em Filosofia': 66,
+  'Bacharelado em Física': 84,
+  'Bacharelado em Matemática': 77,
+  'Bacharelado em Neurociência' : 80,
+  'Bacharelado em Planejamento Territorial': 67,
+  'Bacharelado em Políticas Públicas': 58,
+  'Bacharelado em Química': 70,
+  'Bacharelado em Relações Internacionais': 83,
+  'Engenharia Aeroespacial': 82,
+  'Engenharia Ambiental e Urbana': 61,
+  'Engenharia Biomédica': 74,
+  'Engenharia de Energia': 62,
+  'Engenharia de Gestão': 79,
+  'Engenharia de Informação' : 64,
+  'Engenharia de Instrumentação, Automação e Robótica': 57,
+  'Engenharia de Materiais': 71,
+  'Licenciatura em Ciências Biológicas': 69,
+  'Licenciatura em Filosofia':  65,
+  'Licenciatura em Física': 81,
+  'Licenciatura em Matemática': 63,
+  'Licenciatura em Química': 59
 	}
 
 module.exports.disciplinas_ideal = [
-  'BCJ0205-15', // FETERM
-  'BCM0505-15', // PI
-  'BCN0407-15', // FVV
-  'BCL0307-15', // TQ
-  'BCK0104-15', // IAM
-  'BIR0603-15' // CTS
+  'BCM0506-15', //COMUNICACAO E REDES
+  'BCJ0203-15', // ELETROMAG 
+  'BIN0406-15', // IPE
+  'BCN0405-15', // IEDO
+  'BIR0004-15', //EPISTEMOLOGICAS
+  'BHO0102-15', // DESENVOL. E SUSTE.
+  'BHO0002-15', // PENSA. ECONOMICO
+  'BHP0201-15', // TEMAS E PROBLE
+  'BHO0101-15', // ESTADO E RELA
+  'BIR0603-15', // CTS
+  'BHQ0003-15', // INTEPRE. BRASIL
+  'BHQ0001-15', // IDENT.E CULTURA
 ]
 
 module.exports.fazCorte = fazCorte;
