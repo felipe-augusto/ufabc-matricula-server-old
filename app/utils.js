@@ -151,7 +151,7 @@ function fazCorte (disciplina_id, cb) {
     }
     // verifica se tem reserva de vaga
     var cleaned = resp.map(function (item) {
-      _.pull(item.obrigatorias, 22, 20); // BCT e BCH
+      _.pull(item.obrigatorias, 76, 78); // BCT e BCH
       var reserva = _.includes(item.obrigatorias, item.aluno.id_curso);
       if (!reserva) {
         item.aluno.ind_afinidade = 0;
