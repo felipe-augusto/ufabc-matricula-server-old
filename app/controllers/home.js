@@ -94,9 +94,9 @@ router.post('/test', function (req, res, next) {
   if(!fail) {
     Aluno.findOne({aluno_id: aluno_id}).exec(function (err, aluno) {
       if(aluno) {
-        // aluno.cursos = cursos_salvar;
-        // aluno.save();
-        res.json("nao vou atualizar");
+        aluno.cursos = cursos_salvar;
+        aluno.save();
+        res.json("Atualizado");
       } else {
         Aluno.create({aluno_id: aluno_id, cursos: cursos_salvar}, function (err, aluno) {
           if (err) {

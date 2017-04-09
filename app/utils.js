@@ -173,13 +173,16 @@ function fazCorte (disciplina_id, cb) {
     }
 
     var sort_type = ""
+    var sort_second_type = ""
     if (ideal) {
       sort_type = 'cr';
+      sort_second_type = 'cp';
     } else {
       sort_type = 'cp';
+      sort_second_type = 'cr';
     }
 
-    var test = _.orderBy(cleaned, ['reserva', 'turno', 'ik', sort_type], ['desc', sort_turno, 'desc', 'desc']);
+    var test = _.orderBy(cleaned, ['reserva', 'turno', 'ik', sort_type, sort_second_type], ['desc', sort_turno, 'desc', 'desc', 'desc']);
     var sem_duplicados = _.uniqBy(test, 'id');
     cb(sem_duplicados, sort_type);
     }
