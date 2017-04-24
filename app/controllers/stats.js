@@ -12,6 +12,9 @@ module.exports = function (app) {
   app.use('/stats/', router);
 };
 
+const ID_BCT = 76;
+const ID_BCH = 78;
+
 // variaveis globais que evitam retrabalho
 // pois as informacoes nao mudam
 var contagemMatriculas = {};
@@ -257,7 +260,7 @@ function filtraCurso(id, array) {
 		});
 	}
 	// um dos BI's
-	if(id == 20 || id == 22) {
+	if(id == ID_BCT || id == ID_BCH) {
 		tmp =  _.filter(array,
 			function(item){
 				return _.find(item.curso, {'curso_id' : id, 'obrigatoriedade': 'obrigatoria'});
@@ -266,8 +269,8 @@ function filtraCurso(id, array) {
 		tmp =  _.filter(array,
 			function(item){
 				return _.find(item.curso, {'curso_id' : id}) && // curso desejado
-					!_.find(item.curso, {'curso_id' : 20, 'obrigatoriedade': 'obrigatoria'}) && // tira bct
-					!_.find(item.curso, {'curso_id' : 22, 'obrigatoriedade': 'obrigatoria'}); // tira bch
+					!_.find(item.curso, {'curso_id' : ID_BCT, 'obrigatoriedade': 'obrigatoria'}) && // tira bct
+					!_.find(item.curso, {'curso_id' : ID_BCH, 'obrigatoriedade': 'obrigatoria'}); // tira bch
 		});
 	}
 	return tmp;
@@ -365,7 +368,7 @@ function previsaoDisciplina(id) {
 function previsao (id, cb) {
 	if(previsoes.length != 0) {
 		var filtrado = filtraCurso(parseInt(id), previsoes);
-		if(id == 20 || id == 22) {
+		if(id == ID_BCT || id == ID_BCH) {
 			return cb(_.orderBy(filtrado, ['corte.reserva', 'corte.ik', 'corte.cr'], ['desc', 'desc', 'desc']));
 		} else {
 			return cb(_.orderBy(filtrado, ['corte.reserva', 'corte.ik', 'corte.cp'], ['desc', 'desc', 'desc']));
