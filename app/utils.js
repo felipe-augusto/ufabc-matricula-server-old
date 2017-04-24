@@ -10,15 +10,16 @@ var Disciplina = require("./models/disciplina");
 // pega a lista de disciplinas, horarios do site da matricula
 module.exports.getDisciplinas = function (cb) {
 		request.get("https://matricula.ufabc.edu.br/cache/todasDisciplinas.js", function (error, response, body) {
-    data = JSON.parse(fs.readFileSync(__dirname + "/data/todasDisciplinas.js", "utf8")
-        .replace('todasDisciplinas=', '')
-        .replace(';', ''));
     try {
 			data = JSON.parse(body.replace('todasDisciplinas=', '').replace(';', ''));
       data = JSON.parse(fs.readFileSync(__dirname + "/data/todasDisciplinas.js", "utf8")
         .replace('todasDisciplinas=', '')
         .replace(';', ''));
-      cb(data);
+      var new_data = {}
+      for(key in data) {
+        new_data[data[key].id] = data[key];
+      }
+      cb(new_data);
 		} catch (err) {
 			//getDisciplinas();
 		}

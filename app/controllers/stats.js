@@ -324,6 +324,7 @@ function calculaDemandaGeral() {
 // realocao nao funciona
 function chutesInevitaveis() {
 	if(Object.keys(chutes_inevitaveis).length != 0) {
+		console.log(chutes_inevitaveis);
 		return chutes_inevitaveis;
 	} else {
 		if(Object.keys(grouped_disciplinas).length == 0) {
