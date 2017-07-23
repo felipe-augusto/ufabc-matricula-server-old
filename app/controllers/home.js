@@ -13,6 +13,7 @@ var utils = require('../utils');
 // pega os models
 var Aluno = require("../models/aluno");
 var Disciplina = require("../models/disciplina");
+var History = require("../models/history");
 
 module.exports = function (app) {
   app.use('/', router);
@@ -726,4 +727,27 @@ router.post('/update_matriculas', function (req, res, next) {
     }
   }
 
+})
+
+
+// check if user exists in database
+router.post('/api/history', function (req, res, next) {
+  var ra = req.body.ra;
+  var disciplinas = req.body.data;
+
+  History.findOne({ra: ra}).exec(function (err, history) {
+    if(history) {
+      history.disciplinas = disciplinas;
+      history.save();
+      res.json("Atualizado");
+    } else {
+      History.create({ra: ra, disciplinas: disciplinas}, function (err, history) {
+        if (err) {
+          res.send(err);
+        } else {
+          res.send("ok");
+        }
+      })
+    }
+  })
 })

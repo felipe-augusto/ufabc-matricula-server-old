@@ -53,7 +53,7 @@ var work = function (obj, titles) {
 
         // horrible fix 
         if(obj.teoria != null) {
-        	obj.teoria = obj.teoria.replace("MATRICULA EM DISCIPLINAS - TURMAS  2017.2", '');
+        	obj.teoria = obj.teoria.replace("MATRICULA EM DISCIPLINAS 2017.3TURMAS OFERTADAS", '');
         	if (obj.teoria == "") obj.teoria = null;
         }
         
@@ -90,11 +90,11 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// teoria - pratica (pratica)
 	var titles = {
 			codigo: 'CÓD. TURMA',
-	        disciplina : 'TURMA3',
+	        disciplina : 'TURMA',
 	        horario_pratica: 'PRÁTICA',
 	        teoria: 'DOCENTE TEORIA',
-	        pratica : 'DOCENTE PRATICA',
-	        horario_teoria: 'TEORIA '
+	        pratica : 'DOCENTE PRÁTICA',
+	        horario_teoria: 'TEORIA'
 	}
 
 	var positions = {

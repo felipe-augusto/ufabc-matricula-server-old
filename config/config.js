@@ -14,7 +14,7 @@ if(process.env.DB_USER == "true") {
         name: 'ufabc-matricula-server'
       },
       port: process.env.PORT || 3000,
-      db: 'mongodb://localhost/ufabc'
+      db: 'mongodb://localhost/ufabc4'
     },
 
     test: {
@@ -23,7 +23,7 @@ if(process.env.DB_USER == "true") {
         name: 'ufabc-matricula-server'
       },
       port: process.env.PORT || 3000,
-      db: 'mongodb://localhost/ufabc'
+      db: 'mongodb://localhost/ufabc4'
     },
 
     production: {
@@ -32,7 +32,7 @@ if(process.env.DB_USER == "true") {
         name: 'ufabc-matricula-server'
       },
       port: process.env.PORT || 3000,
-      db: 'mongodb://localhost/ufabc'
+      db: 'mongodb://localhost/ufabc4'
     }
   };
 } else {
