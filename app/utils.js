@@ -189,3 +189,23 @@ function fazCorte (disciplina_id, cb) {
     }
   )
 }
+
+module.exports.todasDisciplinasById = function (todasDisciplinas) {
+  var disciplinas = {};
+  todasDisciplinas.forEach(function(disciplina){
+    disciplinas[disciplina.id] = disciplina;
+  })
+
+  return disciplinas;
+};
+
+module.exports.matriculasByDisciplinas = function (matriculas) {
+  var disciplinas = {};
+  for (aluno_id in matriculas) {
+    matriculas[aluno_id].forEach(function (disciplina_id) {
+      (disciplinas[disciplina_id] = disciplinas[disciplina_id] || [])
+        .push(aluno_id);
+    })
+  }
+  return disciplinas;
+};

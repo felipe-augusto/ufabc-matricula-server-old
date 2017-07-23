@@ -529,60 +529,61 @@ Array.prototype.pushIfNotExist = function(element, comparer) {
     }
 }; 
 
-// 2 QUAD
-// NI, GA, FUV, FEMEC, BIODIVERSIDADE
-// QUANTICA, BIOQUIMICA, EDS
-// 'BCM0504-15',
-// 'BCN0404-15',
-// 'BCN0402-15',
-// 'BCJ0204-15',
-// 'BCL0306-15',
-// 'BCK0103-15',
-// 'BCL0308-15',
-// 'BIQ0602-15'
+function findQuadFromDate(month) {
+  if(month == 1 || month == 2 || month == 3 || month == 4) return 1
+  if(month == 5 || month == 6 || month == 7 || month == 8) return 2
+  if(month == 9 || month == 10 || month == 11 || month == 0) return 3
+}
 
-// 3QUAD
-// FETERM, PI, FVV, TQ
-// IAM, CTS
-// 'BCJ0205-15', // FETERM
-// 'BCM0505-15', // PI
-// 'BCN0407-15', // FVV
-// 'BCL0307-15', // TQ
-// 'BCK0104-15', // IAM
-// 'BIR0603-15' // CTS
-
-// 1 QUAD
-// 'BCM0506-15', //COMUNICACAO E REDES
-// 'BCJ0203-15', // ELETROMAG 
-// 'BIN0406-15', // IPE
-// 'BCN0405-15', // IEDO
-// 'BIR0004-15', //EPISTEMOLOGICAS
-// 'BHO0102-15', // DESENVOL. E SUSTE.
-// 'BHO0002-15', // PENSA. ECONOMICO
-// 'BHP0201-15', // TEMAS E PROBLE
-// 'BHO0101-15', // ESTADO E RELA
-// 'BIR0603-15' // CTS
-// 'BHQ0003-15', // INTEPRE. BRASIL
-// 'BHQ0001-15', // IDENT.E CULTURA
-
-var disciplinas_ideal = [
-  'BCM0506-15', //COMUNICACAO E REDES
-  'BCJ0203-15', // ELETROMAG 
-  'BIN0406-15', // IPE
-  'BCN0405-15', // IEDO
-  'BIR0004-15', //EPISTEMOLOGICAS
-  'BHO0102-15', // DESENVOL. E SUSTE.
-  'BHO0002-15', // PENSA. ECONOMICO
-  'BHP0201-15', // TEMAS E PROBLE
-  'BHO0101-15', // ESTADO E RELA
-  'BIR0603-15', // CTS
-  'BHQ0003-15', // INTEPRE. BRASIL
-  'BHQ0001-15', // IDENT.E CULTURA
-]
+function findIdeais() {
+  return {
+    1 : 
+    [
+      'BCM0506-15', // COMUNICACAO E REDES
+      'BCJ0203-15', // ELETROMAG 
+      'BIN0406-15', // IPE
+      'BCN0405-15', // IEDO
+      'BIR0004-15', // EPISTEMOLOGICAS
+      'BHO0102-15', // DESENVOL. E SUSTE.
+      'BHO0002-15', // PENSA. ECONOMICO
+      'BHP0201-15', // TEMAS E PROBLEMAS
+      'BHO0101-15', // ESTADO E RELA
+      'BIR0603-15', // CTS
+      'BHQ0003-15', // INTEPRE. BRASIL
+      'BHQ0001-15', // IDENT.E CULTURA
+    ],
+    2 : [
+      'BCM0504-15', // NI
+      'BCN0404-15', // GA
+      'BCN0402-15', // FUV
+      'BCJ0204-15', // FEMEC
+      'BCL0306-15', // BIODIVERSIDADE
+      'BCK0103-15', // QUANTICA
+      'BCL0308-15', // BIOQUIMICA
+      'BIQ0602-15', // EDS
+      'BHO1335-15', // FORMACAO SISTEMA INTERNACIONAL
+      'BHO1101-15', // INTRODUCAO A ECONOMIA
+      'BHO0001-15', // INTRODUCAO AS HUMANIDADES
+      'BHP0202-15', // PENSAMENTO CRITICO
+    ],
+    3 : [
+      'BCJ0205-15', // FETERM
+      'BCM0505-15', // PI
+      'BCN0407-15', // FVV
+      'BCL0307-15', // TQ
+      'BCK0104-15', // IAM
+      'BIR0603-15', // CTS
+      'BHP0001-15', // ETICA E JUSTICA
+      'BHQ0301-15', // TERRITORIO E SOCIEDADE
+      // ESTUDO ÉTNICOS RACIAIS
+    ],
+  }[findQuadFromDate(new Date().getMonth())]
+}
 
 // atualiza as disciplinas para o quad ideal
 router.get('/update_ideal', function (req, res, next) {
   // para cada discipina ideal faca
+  var disciplinas_ideal = findIdeais()
   for (var j = 0; j < disciplinas_ideal.length; j++) {
       Disciplina.find({codigo : disciplinas_ideal[j]}).exec(function (err, resp) {
         for (var i = 0; i < resp.length; i++) {
