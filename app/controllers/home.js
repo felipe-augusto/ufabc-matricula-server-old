@@ -90,11 +90,12 @@ router.post('/test', function (req, res, next) {
     curso_obj['turno'] = cursos[i].turno;
     curso_obj['ind_afinidade'] = 0.07 * curso_obj['cr'] + 0.63 * curso_obj['cp'] + 0.005 * curso_obj['quads'];
     
-    if('curso_id' in curso_obj) {
-      curso_obj['id_curso'] = parseInt(curso_obj['curso_id']);
+    if('curso_id' in cursos[i]) {
+      curso_obj['id_curso'] = parseInt(cursos[i].curso_id);
     } else {
       curso_obj['id_curso'] = cursos_ids[curso_obj['nome_curso']];
     }
+    console.log(curso_obj)
     cursos_salvar.push(curso_obj);
   }
   if(!fail) {
