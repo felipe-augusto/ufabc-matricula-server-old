@@ -399,7 +399,7 @@ function previsao (id, cb) {
 						obj.curso = obg;
 						obj.codigo = codigo;
 						obj.criterio = criterio;
-						if( (resp.length / requisicoes) >= 0.20) {
+						if((resp.length / requisicoes) >= 0.20) {
 							previsoes.push(obj);
 						}
 					})

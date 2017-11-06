@@ -63,7 +63,7 @@ module.exports.getCortes = function (id, vagas, nomes, requisicoes, obg, codigo,
 	})
 }
 
-module.exports.cursos_ids = {
+let cursos = {
   'Bacharelado em Ciências da Computação' : 73,
   'Bacharelado em Ciência da Computação': 73,
   'Bacharelado em Ciência e Tecnologia': 76,
@@ -91,7 +91,9 @@ module.exports.cursos_ids = {
   'Licenciatura em Física': 81,
   'Licenciatura em Matemática': 63,
   'Licenciatura em Química': 59
-	}
+}
+
+module.exports.cursos_ids = cursos
 
 module.exports.disciplinas_ideal = [
   'BCM0506-15', //COMUNICACAO E REDES
@@ -152,7 +154,9 @@ function fazCorte (disciplina_id, cb) {
     }
     // verifica se tem reserva de vaga
     var cleaned = resp.map(function (item) {
-      _.pull(item.obrigatorias, 20, 22); // BCT e BCH
+      var id_bct = cursos['Bacharelado em Ciência e Tecnologia']
+      var id_bch = cursos['Bacharelado em Ciências e Humanidades']
+      _.pull(item.obrigatorias, id_bct, id_bch); // BCT e BCH
       var reserva = _.includes(item.obrigatorias, item.aluno.id_curso);
       if (!reserva) {
         item.aluno.ind_afinidade = 0;

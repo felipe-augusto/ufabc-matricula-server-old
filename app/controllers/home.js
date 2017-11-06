@@ -24,36 +24,6 @@ var last_matriculas = new Date();
 
 var todasMatriculas = {};
 
-var cursos_ids = {
-  'Bacharelado em Ciências da Computação' : 73,
-  'Bacharelado em Ciência da Computação': 73,
-  'Bacharelado em Ciência e Tecnologia': 76,
-  'Bacharelado em Ciências Biológicas': 72,
-  'Bacharelado em Ciências Econômicas': 60,
-  'Bacharelado em Ciências e Humanidades': 78,
-  'Bacharelado em Filosofia': 66,
-  'Bacharelado em Física': 84,
-  'Bacharelado em Matemática': 77,
-  'Bacharelado em Neurociência' : 80,
-  'Bacharelado em Planejamento Territorial': 67,
-  'Bacharelado em Políticas Públicas': 58,
-  'Bacharelado em Química': 70,
-  'Bacharelado em Relações Internacionais': 83,
-  'Engenharia Aeroespacial': 82,
-  'Engenharia Ambiental e Urbana': 61,
-  'Engenharia Biomédica': 74,
-  'Engenharia de Energia': 62,
-  'Engenharia de Gestão': 79,
-  'Engenharia de Informação' : 64,
-  'Engenharia de Instrumentação, Automação e Robótica': 57,
-  'Engenharia de Materiais': 71,
-  'Licenciatura em Ciências Biológicas': 69,
-  'Licenciatura em Filosofia':  65,
-  'Licenciatura em Física': 81,
-  'Licenciatura em Matemática': 63,
-  'Licenciatura em Química': 59
-}
-
 router.get('/disciplinas', function (req, res, next) {
   res.charset = 'ISO-8859-1';
   res.header('Last-Modified', last_date);
@@ -92,10 +62,11 @@ router.post('/test', function (req, res, next) {
     
     if('curso_id' in cursos[i]) {
       curso_obj['id_curso'] = parseInt(cursos[i].curso_id);
+      utils.cursos_ids[curso_obj['nome_curso']] = curso_obj['id_curso'];
     } else {
-      curso_obj['id_curso'] = cursos_ids[curso_obj['nome_curso']];
+      curso_obj['id_curso'] = utils.cursos_ids[curso_obj['nome_curso']];
     }
-    console.log(curso_obj)
+
     cursos_salvar.push(curso_obj);
   }
   if(!fail) {
@@ -118,10 +89,6 @@ router.post('/test', function (req, res, next) {
     res.json("erro na hora de atualizar aluno. extensao desatualizada?");
   }
 });
-
-var discover_obg = {
-  'bct' : [22,24,14,16,3,17,4,27,25,20,13,28]
-}
 
 // retorna um obj disciplina
 router.post('/get_disc', function (req, res, next) {
