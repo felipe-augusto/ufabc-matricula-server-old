@@ -7,7 +7,9 @@ var DisciplinaSchema = new mongoose.Schema({
   codigo: String,
   ideal_quad: Boolean,
   alunos_matriculados: [Number],
-  turno: String
+  turno: String,
+  year: Number,
+  month: Number,
 });
 
 module.exports = mongoose.model('Disciplina', DisciplinaSchema); 
