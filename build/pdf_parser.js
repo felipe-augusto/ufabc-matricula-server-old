@@ -56,6 +56,9 @@ var work = function (obj, titles) {
         	obj.teoria = obj.teoria.replace("MATRICULA EM DISCIPLINAS 2017.3TURMAS OFERTADAS", '');
         	if (obj.teoria == "") obj.teoria = null;
         }
+
+        if(obj.teoria == '0') obj.teoria = null
+        if(obj.pratica == '0') obj.pratica = null
         
         response.push(obj);
         console.log(obj);
