@@ -24,6 +24,11 @@ var last_matriculas = new Date();
 
 var todasMatriculas = {};
 
+router.get('/snapshot', function (req, res, next) {
+  res.charset = 'ISO-8859-1';
+  res.sendFile(path.join(__dirname, '../../test/matricula.ufabc.edu.br', 'matricula.html'));
+});
+
 router.get('/disciplinas', function (req, res, next) {
   res.charset = 'ISO-8859-1';
   res.header('Last-Modified', last_date);
