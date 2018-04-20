@@ -92,21 +92,21 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// horario_pratica - teoria (teoria)
 	// teoria - pratica (pratica)
 	var titles = {
-			codigo: 'CÓDIGO TURMA',
-	        disciplina : 'TURMA',
-	        horario_pratica: 'CURSO RESPONSAVEL PELA OFERTA',
-	        teoria: 'DOCENTE TEORIA',
-	        pratica : 'DOCENTE PRÁTICA',
-	        horario_teoria: 'TEORIA'
+		codigo: 'COD. TURMA',
+    disciplina : 'TURMA',
+    after_teoria: 'DOCENTE TEORIA',
+    before_teoria: 'DOCENTE TEORIA',
+    pratica : 'DOCENTE PRÁTICA',
 	}
 
 	var positions = {
-	        disciplina: -1,
-	        teoria: -1,
-	        pratica: -1,
-	        codigo: -1,
-	        horario_teoria: -1,
-	        horario_pratica: -1
+    disciplina: -1,
+    codigo: -1,
+    before_teoria: -1, //64,
+    after_teoria: -1, //75,
+
+    before_pratica: -1, //75,
+    after_pratica: -1, //85,
 	}
 
 	// tries to find the title positions in x
@@ -146,6 +146,7 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	        for (var j = 0; j < pages[i].Texts.length; j++) {
 	        		// codigo da turma -> significa que chegamos ao comeco -> podemos terminar
 	        		// if all values are ready, push it to the output JSON
+                  //console.log(pages[i].Texts[j].R[0].T, pages[i].Texts[j].x)
 	                if (pages[i].Texts[j].x < positions.codigo + 0.5) {
 	                        obj = work(obj, titles);
 	                }
@@ -154,14 +155,14 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	                        obj.disciplina += decodeURIComponent(pages[i].Texts[j].R[0].T);
 	                }
 	                // docente teoria
-	                if (pages[i].Texts[j].x > positions.horario_pratica && pages[i].Texts[j].x <= positions.teoria + 0.5) {
+	                if (pages[i].Texts[j].x > positions.before_teoria && pages[i].Texts[j].x <= positions.after_teoria + 0.5) {
 	                       	if(obj.teoria === null) {
 	                        	obj.teoria = '';
 	                        }
 	                        obj.teoria += decodeURIComponent(pages[i].Texts[j].R[0].T);
 	                }
 	                // docente pratica
-	                if (pages[i].Texts[j].x > positions.teoria && pages[i].Texts[j].x <= positions.pratica + 0.5) {
+	                if (pages[i].Texts[j].x > positions.before_pratica && pages[i].Texts[j].x <= positions.after_pratica + 0.5) {
 	                        if(obj.pratica === null) {
 	                        	obj.pratica = '';
 	                        }
