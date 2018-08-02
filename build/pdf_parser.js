@@ -53,7 +53,6 @@ var work = function (obj, titles) {
 
         // horrible fix 
         if(obj.teoria != null) {
-        	obj.teoria = obj.teoria.replace("MATRICULA EM DISCIPLINAS 2017.3TURMAS OFERTADAS", '');
         	if (obj.teoria == "") obj.teoria = null;
         }
 
@@ -92,11 +91,12 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// horario_pratica - teoria (teoria)
 	// teoria - pratica (pratica)
 	var titles = {
-		codigo: 'COD. TURMA',
+		codigo: 'CÓD. TURMA',
     disciplina : 'TURMA',
-    after_teoria: 'DOCENTE TEORIA',
-    before_teoria: 'DOCENTE TEORIA',
-    pratica : 'DOCENTE PRÁTICA',
+    before_teoria: 'docente teoria',
+    after_teoria: 'docente prática',
+    before_pratica : 'docente prática',
+    after_pratica: 'TOTAL DE '
 	}
 
 	var positions = {
@@ -112,22 +112,16 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	// tries to find the title positions in x
 	// this implies that the PDF does not changes its titles until de PDF end
 	// this is true (??)
-	for (var j = 0; j < pages[FIRST_PAGE].Texts.length; j++) {
-	        for (var key in positions) {
-	        		// this is for debbuging purposes
-	        		// console.log(decodeURI(pages[FIRST_PAGE].Texts[j].R[0].T));
-                	if (decodeURI(pages[FIRST_PAGE].Texts[j].R[0].T) == titles[key]) {
-	                        positions[key] = pages[FIRST_PAGE].Texts[j].x;
-	                };
-	        }
-	        if(positions.teoria != -1 && positions.pratica != -1 && positions.disciplina != -1) {
-	                // encontrou todas as posições
-	                break;
-	        }
-	}
+  pages[FIRST_PAGE].Texts.forEach(t => {
+    let title = decodeURIComponent(t.R[0].T)
+
+    for(var key in titles) {
+      if(titles[key] == title) positions[key] = t.x
+    }
+  })
 
 	// make sure that found every column of the table
-	for (key in positions) {
+	for (var key in positions) {
 	        if(positions[key] == -1) {
 	        		console.log(positions);
 	                throw 'Error: title (' + titles[key] + ') not found';
@@ -136,14 +130,14 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 
 	// creates a model of the discipline obj
 	var obj = {
-	        disciplina : '',
-	        teoria : '',
-	        pratica : ''
+    disciplina : '',
+    teoria : '',
+    pratica : ''
 	};
 
 	// iterate
 	for (var i = FIRST_PAGE; i < pages.length; i++) {
-	        for (var j = 0; j < pages[i].Texts.length; j++) {
+	         for (var j = 0; j < pages[i].Texts.length; j++) {
 	        		// codigo da turma -> significa que chegamos ao comeco -> podemos terminar
 	        		// if all values are ready, push it to the output JSON
                   //console.log(pages[i].Texts[j].R[0].T, pages[i].Texts[j].x)
@@ -151,18 +145,18 @@ pdfParser.on("pdfParser_dataReady", function(pdfData) {
 	                        obj = work(obj, titles);
 	                }
 	                // disciplina
-	                if (pages[i].Texts[j].x > positions.codigo && pages[i].Texts[j].x <= positions.disciplina + 0.5) {
+	                if (pages[i].Texts[j].x > positions.codigo && pages[i].Texts[j].x <= positions.disciplina) {
 	                        obj.disciplina += decodeURIComponent(pages[i].Texts[j].R[0].T);
 	                }
-	                // docente teoria
-	                if (pages[i].Texts[j].x > positions.before_teoria && pages[i].Texts[j].x <= positions.after_teoria + 0.5) {
+                  // docente teoria
+	                if (pages[i].Texts[j].x >= positions.before_teoria && pages[i].Texts[j].x < positions.after_teoria) {
 	                       	if(obj.teoria === null) {
 	                        	obj.teoria = '';
 	                        }
 	                        obj.teoria += decodeURIComponent(pages[i].Texts[j].R[0].T);
 	                }
 	                // docente pratica
-	                if (pages[i].Texts[j].x > positions.before_pratica && pages[i].Texts[j].x <= positions.after_pratica + 0.5) {
+	                if (pages[i].Texts[j].x >= positions.before_pratica && pages[i].Texts[j].x < positions.after_pratica) {
 	                        if(obj.pratica === null) {
 	                        	obj.pratica = '';
 	                        }
